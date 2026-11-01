@@ -201,18 +201,20 @@
     let dislikes = { Alex: {}, Marcelina: {} };
     let activeTab = 'swipe';
 
-    // NEU: Speichert nur den einzelnen Like direkt per PUT an den exakten Pfad, ohne andere zu überschreiben!
+    // Sicheres Speichern per PATCH, damit Firebase automatisch die übergeordneten Ordner anlegt
     async function saveLikeToFirebase(user, name, isLiked) {
-      if (!FIREBASE_URL || FIREBASE_URL.includes("https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/baby_data")) return;
+      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
-        let encodedName = encodeURIComponent(name);
-        let endpoint = isLiked ? `${cleanUrl}/likes/${user}/${encodedName}.json` : `${cleanUrl}/dislikes/${user}/${encodedName}.json`;
+        let payload = {};
+        payload[name] = true;
+
+        let endpoint = isLiked ? `${cleanUrl}/likes/${user}.json` : `${cleanUrl}/dislikes/${user}.json`;
         
         await fetch(endpoint, {
-          method: 'PUT',
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(true)
+          body: JSON.stringify(payload)
         });
       } catch (e) {}
     }
@@ -221,15 +223,14 @@
       if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
-        await fetch(`${cleanUrl}/lastName.json`, {
-          method: 'PUT',
+        await fetch(`${cleanUrl}.json`, {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(val)
+          body: JSON.stringify({ lastName: val })
         });
       } catch (e) {}
     }
 
-    // Hört komplett im Hintergrund auf alles und aktualisiert die Ansicht
     async function listenToFirebase() {
       if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
