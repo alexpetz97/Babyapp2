@@ -197,13 +197,14 @@
     let currentUser = 'Alex';
     let lastName = 'Petz';
     let currentIndex = 0;
-    let likes = { Alex: [], Marcelina: [] };
-    let dislikes = { Alex: [], Marcelina: [] };
+    // Nutzen nun Objekte (Key-Value) statt Arrays, um Firebase-Index-Konflikte zu verhindern
+    let likes = { Alex: {}, Marcelina: {} };
+    let dislikes = { Alex: {}, Marcelina: {} };
     let activeTab = 'swipe';
-    let isSwiping = false; // Verhindert Überschreiben während des Swipens
+    let isSwiping = false;
 
     async function syncToFirebase() {
-      if (!FIREBASE_URL || FIREBASE_URL.includes("https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/")) return;
+      if (!FIREBASE_URL || FIREBASE_URL.includes("https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/baby_data")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
         await fetch(`${cleanUrl}/baby_data.json`, {
@@ -247,8 +248,11 @@
     setInterval(listenToFirebase, 3000);
     listenToFirebase();
 
-    function getMatches(alexL = [], marcL = []) {
-      return NAMES.filter(n => alexL.includes(n.name) && marcL.includes(n.name));
+    function getMatches(alexL = {}, marcL = {}) {
+      let alexKeys = Object.keys(alexL);
+      let marcKeys = Object.keys(marcL);
+      let matchedNames = alexKeys.filter(n => marcKeys.includes(n));
+      return NAMES.filter(n => matchedNames.includes(n.name));
     }
 
     function setUser(u) {
@@ -280,31 +284,28 @@
       if (currentIndex >= NAMES.length) return;
       let curr = NAMES[currentIndex];
       
-      isSwiping = true; // Sperre Live-Pull kurz ab
+      isSwiping = true;
 
-      if (!likes[currentUser]) likes[currentUser] = [];
-      if (!dislikes[currentUser]) dislikes[currentUser] = [];
+      if (!likes[currentUser]) likes[currentUser] = {};
+      if (!dislikes[currentUser]) dislikes[currentUser] = {};
 
       if (dir === 'like') {
-        if (!likes[currentUser].includes(curr.name)) {
-          likes[currentUser].push(curr.name);
-        }
+        likes[currentUser][curr.name] = true;
+        
         let other = currentUser === 'Alex' ? 'Marcelina' : 'Alex';
-        if (likes[other] && likes[other].includes(curr.name)) {
+        if (likes[other] && likes[other][curr.name]) {
           document.getElementById('match-name-text').innerText = `${curr.name} ${lastName}`;
           document.getElementById('match-modal').classList.remove('hidden');
         }
       } else {
-        if (!dislikes[currentUser].includes(curr.name)) {
-          dislikes[currentUser].push(curr.name);
-        }
+        dislikes[currentUser][curr.name] = true;
       }
       
       currentIndex++;
       syncToFirebase();
       render();
 
-      setTimeout(() => { isSwiping = false; }, 1500); // Sperre nach 1.5 Sek. wieder aufheben
+      setTimeout(() => { isSwiping = false; }, 1500);
     }
 
     function closeModal() {
@@ -312,12 +313,14 @@
     }
 
     function render() {
-      let alexLikes = likes.Alex || [];
-      let marcelinaLikes = likes.Marcelina || [];
+      let alexLikes = likes.Alex || {};
+      let marcelinaLikes = likes.Marcelina || {};
       let matches = getMatches(alexLikes, marcelinaLikes);
       
+      let myLikesArr = Object.keys(likes[currentUser] || {});
+
       document.getElementById('match-count').innerText = matches.length;
-      document.getElementById('like-count').innerText = (likes[currentUser] || []).length;
+      document.getElementById('like-count').innerText = myLikesArr.length;
       document.getElementById('lastname-input').value = lastName;
 
       if (currentIndex < NAMES.length) {
@@ -351,11 +354,10 @@
 
       document.getElementById('likes-title').innerText = `Deine Likes (${currentUser})`;
       let lList = document.getElementById('likes-list');
-      let myL = likes[currentUser] || [];
-      if (myL.length === 0) {
+      if (myLikesArr.length === 0) {
         lList.innerHTML = `<div class="glass-card p-6 rounded-2xl text-center text-gray-400 text-xs font-semibold">Du hast noch keine Namen geliked.</div>`;
       } else {
-        lList.innerHTML = myL.map(n => `
+        lList.innerHTML = myLikesArr.map(n => `
           <div class="glass-card p-3.5 rounded-2xl shadow-sm flex justify-between items-center border border-white">
             <span class="font-bold text-gray-800">${n} ${lastName}</span>
             <span class="text-xs text-rose-500 font-extrabold bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100">♥ Geliked</span>
