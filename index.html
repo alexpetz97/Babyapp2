@@ -199,14 +199,14 @@
     }
 
     let currentUser = 'Alex';
-    let lastName = 'Müller';
+    let lastName = 'Petz';
     let currentIndex = 0;
     let likes = { Alex: [], Marcelina: [] };
     let dislikes = { Alex: [], Marcelina: [] };
     let activeTab = 'swipe';
 
     async function syncToFirebase() {
-      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
+      if (!FIREBASE_URL || FIREBASE_URL.includes("https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/")) return;
       try {
         await fetch(`${FIREBASE_URL}/baby_data.json`, {
           method: 'PUT',
