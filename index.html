@@ -124,6 +124,12 @@
   <script>
     const FIREBASE_URL = "https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app";
 
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === '1') {
+      localStorage.clear();
+      window.location.href = window.location.pathname; // URL wieder sauber machen
+    }
+    
     // Umfassende, saubere Namensdatenbank mit korrekten Geschlechtern
     const NAMES = [
       {name: 'Liam', gender: 'boy', origin: 'Irisch'},
