@@ -27,7 +27,7 @@
       { name: 'Leo', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Löwe' },
       { name: 'Ella', gender: 'girl', origin: 'Deutsch', meaning: 'Die Strahlende' }
     ];
-    // Automatische Erweiterung auf über 5000 moderne/europäische/amerikanische Namen
+
     const NAMES = [];
     const prefixes = ['Al', 'El', 'Mar', 'San', 'Car', 'Cor', 'Mel', 'Nor', 'Ben', 'Finn'];
     const suffixes = ['son', 'ley', 'ton', 'lyn', 'ell', 'ian', 'er', 'en', 'ia', 'a'];
@@ -48,6 +48,7 @@
       const [lastName, setLastName] = useState('Petz');
       const [index, setIndex] = useState(0);
       const [likes, setLikes] = useState({ Alex: [], Marcelina: [] });
+      const [dislikes, setDislikes] = useState({ Alex: [], Marcelina: [] });
       const [tab, setTab] = useState('swipe');
       const [matchModal, setMatchModal] = useState(null);
 
@@ -55,25 +56,32 @@
 
       const handleSwipe = (dir) => {
         if (!current) return;
+        const name = current.name;
+
         if (dir === 'like') {
-          const newLikes = { ...likes, [user]: [...likes[user], current.name] };
-          setLikes(newLikes);
-          const other = user === 'Alex' ? 'Marcelina' : 'Alex';
-          if (newLikes[other].includes(current.name)) {
-            setMatchModal(current.name);
+          const updatedLikes = { ...likes, [user]: [...likes[user], name] };
+          setLikes(updatedLikes);
+
+          const otherUser = user === 'Alex' ? 'Marcelina' : 'Alex';
+          if (updatedLikes[otherUser].includes(name)) {
+            setMatchModal(name);
           }
+        } else {
+          setDislikes({ ...dislikes, [user]: [...dislikes[user], name] });
         }
         setIndex(prev => prev + 1);
       };
 
       const matches = NAMES.filter(n => likes.Alex.includes(n.name) && likes.Marcelina.includes(n.name));
+      const myLikes = likes[user];
 
       return (
         <div className="max-w-md mx-auto min-h-screen p-4 flex flex-col">
+          {/* Header */}
           <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex justify-between items-center">
             <div>
               <h1 className="font-bold text-rose-500">Alex & Marcelina</h1>
-              <p className="text-[10px] text-gray-400">Database: {NAMES.length} Namen</p>
+              <p className="text-[10px] text-gray-400">{NAMES.length} Namen</p>
             </div>
             <div className="flex bg-rose-50 p-1 rounded-xl">
               <button onClick={() => setUser('Alex')} className={`px-3 py-1 rounded-lg text-xs font-bold ${user === 'Alex' ? 'bg-rose-500 text-white' : 'text-gray-500'}`}>Alex</button>
@@ -81,16 +89,20 @@
             </div>
           </div>
 
+          {/* Nachname */}
           <div className="bg-white rounded-xl p-3 shadow-sm mb-4">
-            <label className="text-xs text-gray-400 font-semibold block mb-1">Euer Nachname:</label>
+            <label className="text-xs text-gray-400 font-semibold block mb-1">Euer Nachname (Vorschau):</label>
             <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-rose-50 rounded-lg p-2 text-sm font-bold outline-none" />
           </div>
 
+          {/* Tabs */}
           <div className="flex bg-white rounded-xl p-1 shadow-sm mb-4">
             <button onClick={() => setTab('swipe')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'swipe' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Swipen</button>
             <button onClick={() => setTab('matches')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'matches' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Matches ({matches.length})</button>
+            <button onClick={() => setTab('likes')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'likes' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Likes ({myLikes.length})</button>
           </div>
 
+          {/* Swipe Ansicht */}
           {tab === 'swipe' && (
             <div className="flex-1 flex flex-col justify-center items-center">
               {current ? (
@@ -115,28 +127,52 @@
             </div>
           )}
 
+          {/* Matches Ansicht */}
           {tab === 'matches' && (
             <div className="space-y-2">
+              <h3 className="font-bold text-sm text-gray-700 px-1">Gemeinsame Favoriten (Matches ❤️):</h3>
               {matches.length === 0 ? (
                 <div className="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Noch keine Matches. Swipt weiter!</div>
               ) : (
                 matches.map((m, i) => (
                   <div key={i} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
-                    <span className="font-bold">{m.name} {lastName}</span>
-                    <span>🎉</span>
+                    <div>
+                      <span className="font-bold text-gray-800">{m.name} {lastName}</span>
+                      <p className="text-[10px] text-gray-400">{m.origin}</p>
+                    </div>
+                    <span className="text-xl">🎉</span>
                   </div>
                 ))
               )}
             </div>
           )}
 
+          {/* Likes Ansicht */}
+          {tab === 'likes' && (
+            <div className="space-y-2">
+              <h3 className="font-bold text-sm text-gray-700 px-1">Deine Likes ({user}):</h3>
+              {myLikes.length === 0 ? (
+                <div className="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Du hast noch keine Namen geliked.</div>
+              ) : (
+                myLikes.map((name, i) => (
+                  <div key={i} className="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center">
+                    <span className="font-bold text-gray-800">{name} {lastName}</span>
+                    <span className="text-xs text-rose-500 font-bold">♥ Geliked</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Match Popup Modal */}
           {matchModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-xl">
-                <h2 className="text-2xl font-bold text-rose-500">MATCH! ❤️</h2>
-                <p className="text-sm text-gray-600 mt-1">Ihr habt ein Match beim Namen:</p>
-                <p className="text-lg font-black mt-1">{matchModal} {lastName}</p>
-                <button onClick={() => setMatchModal(null)} className="mt-6 w-full py-3 bg-rose-500 text-white font-bold rounded-xl">Super!</button>
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-2xl border-4 border-rose-300">
+                <div className="text-4xl mb-2">💖</div>
+                <h2 className="text-2xl font-bold text-rose-500">MATCH!</h2>
+                <p className="text-sm text-gray-600 mt-1">Ihr beide findet gut:</p>
+                <p className="text-xl font-black text-gray-800 mt-1">{matchModal} {lastName}</p>
+                <button onClick={() => setMatchModal(null)} className="mt-6 w-full py-3 bg-rose-500 text-white font-bold rounded-2xl shadow-lg">Super!</button>
               </div>
             </div>
           )}
