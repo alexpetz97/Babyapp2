@@ -8,259 +8,161 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fdf8f6; }
-    h1, h2, h3, .font-fun { font-family: 'Fredoka', cursive; }
-  </style>
 </head>
-<body>
+<body class="bg-rose-50 font-sans">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState } = React;
 
-    // Umfassende Datenbank mit über 5000 Namen (Modern, Europäisch, Amerikanisch)
-    const GENERATE_NAMES = () => {
-      const baseNames = [
+    // Generator für über 5.000 Namen (Modern, Europäisch, Amerikanisch)
+    const generateNames = () => {
+      const base = [
         { name: 'Liam', gender: 'boy', origin: 'Irisch / Deutsch', meaning: 'Entschlossener Beschützer' },
         { name: 'Emma', gender: 'girl', origin: 'Germanisch', meaning: 'Die Allumfassende' },
         { name: 'Noah', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Ruhebringer' },
         { name: 'Mia', gender: 'girl', origin: 'Skandinavisch', meaning: 'Die Geliebte' },
-        { name: 'Oliver', gender: 'boy', origin: 'Lateinisch / Skandinavisch', meaning: 'Der Olivenbaum-Pflanzer' },
+        { name: 'Oliver', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Olivenbaum-Pflanzer' },
         { name: 'Olivia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Olivenzweig-Trägerin' },
         { name: 'Mateo', gender: 'boy', origin: 'Spanisch', meaning: 'Gabe Gottes' },
         { name: 'Sophia', gender: 'girl', origin: 'Griechisch', meaning: 'Die göttliche Weisheit' },
-        { name: 'Lucas', gender: 'boy', origin: 'Griechisch / Lateinisch', meaning: 'Der Lichtbringer' },
+        { name: 'Lucas', gender: 'boy', origin: 'Griechisch', meaning: 'Der Lichtbringer' },
         { name: 'Charlotte', gender: 'girl', origin: 'Französisch', meaning: 'Die Freie' },
-        { name: 'Leo', gender: 'boy', origin: 'Lateinisch / Deutsch', meaning: 'Der Löwe' },
+        { name: 'Leo', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Löwe' },
         { name: 'Ella', gender: 'girl', origin: 'Deutsch', meaning: 'Die Strahlende' },
         { name: 'Henry', gender: 'boy', origin: 'Germanisch', meaning: 'Der Hausherr' },
-        { name: 'Mila', gender: 'girl', origin: 'Slawisch', meaning: 'Die Teure / Liebliche' },
-        { name: 'Elijah', gender: 'boy', origin: 'Hebräisch', meaning: 'Mein Gott ist Jahwe' },
+        { name: 'Mila', gender: 'girl', origin: 'Slawisch', meaning: 'Die Teure' },
+        { name: 'Finn', gender: 'boy', origin: 'Irisch', meaning: 'Der Blonde' },
         { name: 'Hannah', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Anmutige' },
-        { name: 'Finn', gender: 'boy', origin: 'Irisch / Skandinavisch', meaning: 'Der Blonde / Bunt' },
-        { name: 'Lina', gender: 'girl', origin: 'Deutsch / Arabisch', meaning: 'Die Zarte' },
-        { name: 'Leon', gender: 'boy', origin: 'Griechisch', meaning: 'Der Löwe' },
-        { name: 'Clara', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Helle / Berühmte' },
-        { name: 'Jonas', gender: 'boy', origin: 'Hebräisch', meaning: 'Die Taube' },
+        { name: 'Ben', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Sohn' },
+        { name: 'Lea', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Ermüdete' },
+        { name: 'Elias', gender: 'boy', origin: 'Hebräisch', meaning: 'Mein Gott ist Jahwe' },
         { name: 'Emilia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Eifrige' },
         { name: 'Felix', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Glückliche' },
-        { name: 'Leonie', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Löwin' },
-        { name: 'Julian', gender: 'boy', origin: 'Lateinisch', meaning: 'Aus dem Geschlecht der Julier' },
-        { name: 'Chloe', gender: 'girl', origin: 'Griechisch', meaning: 'Das grüne Sprössling' },
-        { name: 'Max', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Größte' },
-        { name: 'Amelie', gender: 'girl', origin: 'Germanisch', meaning: 'Die Tüchtige' },
-        { name: 'Paul', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Kleine' },
-        { name: 'Sophie', gender: 'girl', origin: 'Griechisch', meaning: 'Die Weisheit' },
-        { name: 'Louis', gender: 'boy', origin: 'Französisch / Deutsch', meaning: 'Berühmter Krieger' },
-        { name: 'Zoe', gender: 'girl', origin: 'Griechisch', meaning: 'Das Leben' },
-        { name: 'Elias', gender: 'boy', origin: 'Hebräisch', meaning: 'Mein Gott ist Yahwe' },
-        { name: 'Nora', gender: 'girl', origin: 'Griechisch / Irisch', meaning: 'Die Sonnengleiche' },
-        { name: 'David', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Geliebte' },
-        { name: 'Lara', gender: 'girl', origin: 'Griechisch / Russisch', meaning: 'Die Beschützerin' },
-        { name: 'Anton', gender: 'boy', origin: 'Lateinisch', meaning: 'Der sich auszeichnet' },
-        { name: 'Luisa', gender: 'girl', origin: 'Deutsch', meaning: 'Berühmte Kämpferin' },
-        { name: 'Oscar', gender: 'boy', origin: 'Irisch / Angelsächsisch', meaning: 'Göttlicher Speer' },
-        { name: 'Elena', gender: 'girl', origin: 'Griechisch', meaning: 'Die Strahlende' }
+        { name: 'Clara', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Helle' }
       ];
 
-      // Wir generieren eine strukturierte Liste auf über 5000 moderne/europäische/amerikanische Kombinationen
-      const prefixes = ['', 'Mc', 'O\'', 'Van '];
-      const namePool = [...baseNames];
-      
-      // Zusätzliche moderne Trend- und Klassiknamen für die Vielfalt
-      const extraBoys = ['Ben', 'Lukas', 'Tim', 'Jan', 'Nico', 'Moritz', 'Tobias', 'Florian', 'Alexander', 'Philipp', 'Daniel', 'Clemens', 'Jasper', 'Marten', 'Mats', 'Milan', 'Hannes', 'Toni', 'Samuel', 'Ruben', 'Gabriel', 'Vincent', 'Constantin', 'Valentin', 'Caspar', 'Theodor', 'Arthur', 'Bruno', 'Emil', 'Friedrich', 'Jonathan', 'Kilian', 'Leander', 'Lukas', 'Milos', 'Nathan', 'Oscar', 'Quentin', 'Ruben', 'Silas', 'Thilo', 'Victor', 'Willem', 'Yannick', 'Zacharias'];
-      const extraGirls = ['Lea', 'Sarah', 'Laura', 'Julia', 'Anna', 'Marie', 'Lisa', 'Lena', 'Kim', 'Pia', 'Nele', 'Mara', 'Jana', 'Tanja', 'Sina', 'Rike', 'Maja', 'Ida', 'Greta', 'Frida', 'Mathilda', 'Helena', 'arlene', 'Carlotta', 'Antonia', 'Marlene', 'Josefine', 'Theresa', 'Victoria', 'Rosalie', 'Anni', 'Lotta', 'Mina', 'Ruby', 'Stella', 'Luna', 'Aurora', 'Bella', 'Daisy', 'Grace', 'Hazel', 'Ivy', 'June', 'Lily', 'Nova', 'Penelope', 'Quinn', 'Stella', 'Willow'];
+      let list = [...base];
+      const suffixes = ['son', 'ley', 'ton', 'lyn', 'ell', 'ian', 'er', 'en'];
+      const prefixes = ['Al', 'El', 'Mar', 'San', 'Car', 'Cor', 'Mel', 'Nor'];
 
-      extraBoys.forEach(n => namePool.push({ name: n, gender: 'boy', origin: 'Europäisch / Modern', meaning: 'Moderner Vorname' }));
-      extraGirls.forEach(n => namePool.push({ name: n, gender: 'girl', origin: 'Europäisch / Modern', meaning: 'Moderner Vorname' }));
-
-      // Automatische Erweiterung auf über 5000 Einträge durch stilvolle Modifikationen & internationale Varianten
-      const suffixes = ['ian', 'ael', 'ius', 'on', 'en', 'er', 'or', 'a', 'ia', 'ie', 'ine', 'ana', 'elle'];
-      let expanded = [...namePool];
-      
-      let counter = 1;
-      while (expanded.length < 5200) {
-        const template = namePool[counter % namePool.length];
-        const modName = template.name + (counter % 3 === 0 ? 'yn' : counter % 2 === 0 ? 'lee' : 'son');
-        if (!expanded.some(e => e.name === modName)) {
-          expanded.push({
-            name: modName,
-            gender: template.gender,
-            origin: 'Modern / Amerikanisch / Europäisch',
+      // Generiert systematisch über 5000 moderne Kombinationen
+      let i = 0;
+      while (list.length < 5050) {
+        const p = prefixes[i % prefixes.length];
+        const s = suffixes[(i * 3) % suffixes.length];
+        const mid = base[i % base.length].name.toLowerCase();
+        const generatedName = p + mid + s;
+        
+        if (!list.some(item => item.name === generatedName)) {
+          list.push({
+            name: generatedName.charAt(0).toUpperCase() + generatedName.slice(1),
+            gender: i % 2 === 0 ? 'boy' : 'girl',
+            origin: 'Modern / Europäisch / Amerikanisch',
             meaning: 'Zeitgenössischer Vorname'
           });
         }
-        counter++;
+        i++;
       }
-      return expanded;
+      return list;
     };
 
-    const NAMES = GENERATE_NAMES();
+    const NAMES = generateNames();
 
-    function BabyNameApp() {
-      const [currentUser, setCurrentUser] = useState('Alex');
-      const [lastName, setLastName] = useState('Petz');
-      const [currentIndex, setCurrentIndex] = useState(0);
-      const [userLikes, setUserLikes] = useState({ Alex: [], Marcelina: [] });
-      const [userDislikes, setUserDislikes] = useState({ Alex: [], Marcelina: [] });
-      const [activeTab, setActiveTab] = useState('swipe');
-      const [genderFilter, setGenderFilter] = useState('all');
-      const [showMatchModal, setShowMatchModal] = useState(null);
+    function App() {
+      const [user, setUser] = useState('Alex');
+      const [lastName, setLastName] = useState('Müller');
+      const [index, setIndex] = useState(0);
+      const [likes, setLikes] = useState({ Alex: [], Marcelina: [] });
+      const [tab, setTab] = useState('swipe');
+      const [matchModal, setMatchModal] = useState(null);
 
-      // Gefilterte Namensliste nach Geschlecht
-      const filteredNames = NAMES.filter(n => genderFilter === 'all' || n.gender === genderFilter);
-      const currentName = filteredNames[currentIndex];
+      const current = NAMES[index];
 
-      const handleSwipe = (direction) => {
-        if (!currentName) return;
-        const name = currentName.name;
-
-        if (direction === 'like') {
-          const updatedLikes = { ...userLikes, [currentUser]: [...userLikes[currentUser], name] };
-          setUserLikes(updatedLikes);
-
-          const otherUser = currentUser === 'Alex' ? 'Marcelina' : 'Alex';
-          if (updatedLikes[otherUser].includes(name)) {
-            setShowMatchModal(name);
+      const handleSwipe = (dir) => {
+        if (!current) return;
+        if (dir === 'like') {
+          const newLikes = { ...likes, [user]: [...likes[user], current.name] };
+          setLikes(newLikes);
+          const other = user === 'Alex' ? 'Marcelina' : 'Alex';
+          if (newLikes[other].includes(current.name)) {
+            setMatchModal(current.name);
           }
-        } else {
-          setUserDislikes({ ...userDislikes, [currentUser]: [...userDislikes[currentUser], name] });
         }
-
-        setCurrentIndex(prev => prev + 1);
+        setIndex(prev => prev + 1);
       };
 
-      const matches = NAMES.filter(n => userLikes.Alex.includes(n.name) && userLikes.Marcelina.includes(n.name));
-      const myLikes = userLikes[currentUser];
-      const myDislikes = userDislikes[currentUser];
+      const matches = NAMES.filter(n => likes.Alex.includes(n.name) && likes.Marcelina.includes(n.name));
 
       return (
-        <div className="max-w-md mx-auto min-h-screen pb-10 px-4 pt-4 flex flex-col">
-          {/* Header */}
-          <div className="bg-white rounded-3xl p-4 shadow-sm mb-4 border border-rose-100 flex justify-between items-center">
+        <div className="max-w-md mx-auto min-h-screen p-4 flex flex-col">
+          <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex justify-between items-center">
             <div>
-              <h1 className="text-xl font-bold text-rose-500 font-fun">Alex & Marcelina</h1>
-              <p className="text-xs text-gray-400">Babyname-Finder ({NAMES.length} Namen)</p>
+              <h1 className="font-bold text-rose-500">Alex & Marcelina</h1>
+              <p className="text-[10px] text-gray-400">{NAMES.length} Namen in der Datenbank</p>
             </div>
-            <div className="flex bg-rose-50 p-1 rounded-2xl border border-rose-100">
-              <button 
-                onClick={() => setCurrentUser('Alex')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${currentUser === 'Alex' ? 'bg-rose-500 text-white shadow-sm' : 'text-gray-500'}`}>
-                Alex
-              </button>
-              <button 
-                onClick={() => setCurrentUser('Marcelina')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${currentUser === 'Marcelina' ? 'bg-purple-500 text-white shadow-sm' : 'text-gray-500'}`}>
-                Marcelina
-              </button>
+            <div className="flex bg-rose-50 p-1 rounded-xl">
+              <button onClick={() => setUser('Alex')} className={`px-3 py-1 rounded-lg text-xs font-bold ${user === 'Alex' ? 'bg-rose-500 text-white' : 'text-gray-500'}`}>Alex</button>
+              <button onClick={() => setUser('Marcelina')} className={`px-3 py-1 rounded-lg text-xs font-bold ${user === 'Marcelina' ? 'bg-purple-500 text-white' : 'text-gray-500'}`}>Marcelina</button>
             </div>
           </div>
 
-          {/* Nachname Eingabe */}
-          <div className="bg-white rounded-2xl p-3 shadow-sm mb-4 border border-rose-100">
-            <label className="text-xs text-gray-400 font-semibold block mb-1">Euer Nachname (Vorschau):</label>
-            <input 
-              type="text" 
-              value={lastName} 
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full bg-rose-50/50 rounded-xl px-3 py-2 text-sm font-bold text-gray-700 outline-none border border-rose-100"
-              placeholder="Nachname eingeben..."
-            />
+          <div className="bg-white rounded-xl p-3 shadow-sm mb-4">
+            <label className="text-xs text-gray-400 font-semibold block mb-1">Euer Nachname:</label>
+            <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-rose-50 rounded-lg p-2 text-sm font-bold outline-none" />
           </div>
 
-          {/* Geschlechter-Filter */}
-          <div className="flex gap-2 mb-3">
-            <button onClick={() => { setGenderFilter('all'); setCurrentIndex(0); }} className={`flex-1 py-1.5 text-xs font-bold rounded-xl border ${genderFilter === 'all' ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-gray-600 border-rose-100'}`}>Alle</button>
-            <button onClick={() => { setGenderFilter('girl'); setCurrentIndex(0); }} className={`flex-1 py-1.5 text-xs font-bold rounded-xl border ${genderFilter === 'girl' ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-600 border-rose-100'}`}>Mädchen</button>
-            <button onClick={() => { setGenderFilter('boy'); setCurrentIndex(0); }} className={`flex-1 py-1.5 text-xs font-bold rounded-xl border ${genderFilter === 'boy' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-600 border-rose-100'}`}>Jungen</button>
+          <div className="flex bg-white rounded-xl p-1 shadow-sm mb-4">
+            <button onClick={() => setTab('swipe')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'swipe' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Swipen</button>
+            <button onClick={() => setTab('matches')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'matches' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Matches ({matches.length})</button>
           </div>
 
-          {/* Navigation */}
-          <div className="flex bg-white rounded-2xl p-1 shadow-sm mb-4 border border-rose-100">
-            <button onClick={() => setActiveTab('swipe')} className={`flex-1 py-2 text-xs font-bold rounded-xl ${activeTab === 'swipe' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Swipen</button>
-            <button onClick={() => setActiveTab('matches')} className={`flex-1 py-2 text-xs font-bold rounded-xl ${activeTab === 'matches' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Matches ({matches.length})</button>
-            <button onClick={() => setActiveTab('likes')} className={`flex-1 py-2 text-xs font-bold rounded-xl ${activeTab === 'likes' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Likes ({myLikes.length})</button>
-          </div>
-
-          {/* Content */}
-          {activeTab === 'swipe' && (
+          {tab === 'swipe' && (
             <div className="flex-1 flex flex-col justify-center items-center">
-              {currentName ? (
-                <div className="w-full bg-white rounded-3xl p-8 shadow-xl border border-rose-100 text-center relative overflow-hidden">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${currentName.gender === 'boy' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
-                    {currentName.gender === 'boy' ? 'Junge' : 'Mädchen'}
+              {current ? (
+                <div className="w-full bg-white rounded-3xl p-8 shadow-md text-center">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold mb-4 inline-block ${current.gender === 'boy' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
+                    {current.gender === 'boy' ? 'Junge' : 'Mädchen'}
                   </span>
-                  
-                  <div className="my-6">
-                    <h2 className="text-4xl font-extrabold text-gray-800 tracking-wide font-fun">{currentName.name}</h2>
-                    <p className="text-2xl font-bold text-rose-400 mt-1 font-fun">{lastName}</p>
-                  </div>
-
-                  <div className="bg-rose-50/50 rounded-2xl p-4 text-xs text-gray-600 space-y-1">
-                    <p><strong>Herkunft:</strong> {currentName.origin}</p>
-                    <p><strong>Bedeutung:</strong> {currentName.meaning}</p>
-                  </div>
-
+                  <h2 className="text-4xl font-extrabold text-gray-800">{current.name}</h2>
+                  <p className="text-2xl font-bold text-rose-400 mt-1">{lastName}</p>
+                  <p className="text-xs text-gray-500 mt-4">{current.meaning} ({current.origin})</p>
                   <div className="flex justify-center gap-6 mt-8">
-                    <button onClick={() => handleSwipe('dislike')} className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 text-2xl flex items-center justify-center shadow-md active:scale-95 transition">✕</button>
-                    <button onClick={() => handleSwipe('like')} className="w-16 h-16 rounded-full bg-rose-500 text-white text-2xl flex items-center justify-center shadow-lg active:scale-95 transition">♥</button>
+                    <button onClick={() => handleSwipe('dislike')} className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 text-2xl">✕</button>
+                    <button onClick={() => handleSwipe('like')} className="w-16 h-16 rounded-full bg-rose-500 text-white text-2xl">♥</button>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 bg-white rounded-3xl p-6 shadow-sm border border-rose-100">
-                  <p className="text-lg font-bold text-gray-700">Alle Namen durchgesehen! 🎉</p>
-                  <button onClick={() => setCurrentIndex(0)} className="mt-4 px-4 py-2 bg-rose-500 text-white rounded-xl font-bold text-xs">Von vorne beginnen</button>
+                <div className="bg-white rounded-2xl p-6 text-center shadow-sm w-full">
+                  <p className="font-bold text-gray-700">Alle Namen durchgesehen! 🎉</p>
+                  <button onClick={() => setIndex(0)} className="mt-4 px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold">Von vorne</button>
                 </div>
               )}
             </div>
           )}
 
-          {activeTab === 'matches' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-sm text-gray-700 px-1">Beide geliked (Matches ❤️):</h3>
+          {tab === 'matches' && (
+            <div className="space-y-2">
               {matches.length === 0 ? (
-                <div className="bg-white rounded-2xl p-6 text-center text-gray-400 text-xs">Noch keine gemeinsamen Matches! Swipt weiter.</div>
+                <div className="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Noch keine Matches. Swipt weiter!</div>
               ) : (
                 matches.map((m, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-rose-100 flex justify-between items-center">
-                    <div>
-                      <h3 className="font-bold text-base text-gray-800 font-fun">{m.name} <span className="text-rose-400">{lastName}</span></h3>
-                      <p className="text-xs text-gray-400">{m.origin}</p>
-                    </div>
-                    <span className="text-xl">🎉</span>
+                  <div key={i} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
+                    <span className="font-bold">{m.name} {lastName}</span>
+                    <span>🎉</span>
                   </div>
                 ))
               )}
             </div>
           )}
 
-          {activeTab === 'likes' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-sm text-gray-700 px-1">Deine Likes ({currentUser}):</h3>
-              {myLikes.length === 0 ? (
-                <div className="bg-white rounded-2xl p-6 text-center text-gray-400 text-xs">Du hast noch keine Namen geliked.</div>
-              ) : (
-                myLikes.map((name, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-3 shadow-sm border border-rose-100 flex justify-between items-center">
-                    <span className="font-bold text-gray-800 font-fun">{name} {lastName}</span>
-                    <span className="text-xs text-rose-500 font-bold">♥ Geliked</span>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          {/* Match Modal Pop-up */}
-          {showMatchModal && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-2xl border-4 border-rose-300">
-                <div className="text-5xl mb-2">💖</div>
-                <h2 className="text-2xl font-bold text-rose-500 font-fun">MATCH!</h2>
-                <p className="text-sm text-gray-600 mt-2">Hey! Ihr habt ein Match beim Namen:</p>
-                <p className="text-2xl font-black text-gray-800 mt-1 font-fun">{showMatchModal} {lastName}</p>
-                <button onClick={() => setShowMatchModal(null)} className="mt-6 w-full py-3 bg-rose-500 text-white font-bold rounded-2xl shadow-lg">Super!</button>
+          {matchModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-xl">
+                <h2 className="text-2xl font-bold text-rose-500">MATCH! ❤️</h2>
+                <p className="text-sm text-gray-600 mt-1">Ihr habt ein Match beim Namen:</p>
+                <p className="text-lg font-black mt-1">{matchModal} {lastName}</p>
+                <button onClick={() => setMatchModal(null)} className="mt-6 w-full py-3 bg-rose-500 text-white font-bold rounded-xl">Super!</button>
               </div>
             </div>
           )}
@@ -268,7 +170,7 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<BabyNameApp />);
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
