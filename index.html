@@ -52,7 +52,7 @@
     <!-- Nachname Vorschau -->
     <div class="glass-card rounded-2xl p-3.5 shadow-sm mb-4">
       <label class="text-[11px] uppercase tracking-wider text-rose-400 font-bold block mb-1">Euer Nachname (Vorschau)</label>
-      <input type="text" id="lastname-input" value="Müller" oninput="updateLastName(this.value)" class="w-full bg-white/80 rounded-xl px-3.5 py-2 text-base font-bold text-gray-800 outline-none border border-rose-100 focus:border-rose-400 focus:ring-2 focus:ring-rose-200 transition-all" />
+      <input type="text" id="lastname-input" value="Petz" oninput="updateLastName(this.value)" class="w-full bg-white/80 rounded-xl px-3.5 py-2 text-base font-bold text-gray-800 outline-none border border-rose-100 focus:border-rose-400 focus:ring-2 focus:ring-rose-200 transition-all" />
     </div>
 
     <!-- Navigation Tabs -->
@@ -74,7 +74,7 @@
 
         <div class="my-2">
           <h2 id="name-display" class="text-4xl font-black text-gray-800 tracking-tight leading-none mb-2">Emma</h2>
-          <p id="surname-display" class="text-2xl font-bold text-rose-500/90 tracking-normal">Müller</p>
+          <p id="surname-display" class="text-2xl font-bold text-rose-500/90 tracking-normal">Petz</p>
         </div>
 
         <div class="mt-6 bg-white/60 rounded-2xl p-3 border border-rose-100/50">
@@ -114,7 +114,7 @@
       </div>
       <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-600">MATCH!</h2>
       <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mt-2">Ihr beide liebt den Namen:</p>
-      <p id="match-name-text" class="text-2xl font-black text-gray-800 mt-1">Emma Müller</p>
+      <p id="match-name-text" class="text-2xl font-black text-gray-800 mt-1">Emma Petz</p>
       <button onclick="closeModal()" class="btn-bounce mt-6 w-full py-3.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-extrabold rounded-2xl shadow-lg shadow-rose-500/30">
         Wunderschön! ✨
       </button>
@@ -122,8 +122,7 @@
   </div>
 
   <script>
-    // ⚠️ HIER DEINE FIREBASE URL EINTRAGEN:
-    const FIREBASE_URL = "https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/";
+    const FIREBASE_URL = "https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app";
 
     const rawNames = [
       {n: 'Liam', g: 'boy', o: 'Irisch'}, {n: 'Emma', g: 'girl', o: 'Germanisch'},
@@ -201,9 +200,10 @@
     let likes = { Alex: [], Marcelina: [] };
     let dislikes = { Alex: [], Marcelina: [] };
     let activeTab = 'swipe';
+    let isSwiping = false; // Verhindert Überschreiben während des Swipens
 
     async function syncToFirebase() {
-      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
+      if (!FIREBASE_URL || FIREBASE_URL.includes("https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
         await fetch(`${cleanUrl}/baby_data.json`, {
@@ -215,13 +215,15 @@
     }
 
     async function listenToFirebase() {
-      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
+      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE") || isSwiping) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
         const res = await fetch(`${cleanUrl}/baby_data.json`);
         const data = await res.json();
         if (data) {
-          if (data.lastName) lastName = data.lastName;
+          if (data.lastName && data.lastName !== lastName) {
+            lastName = data.lastName;
+          }
           if (data.likes) {
             let prevMatches = getMatches(likes.Alex, likes.Marcelina).length;
             likes = data.likes;
@@ -242,7 +244,7 @@
       } catch (e) {}
     }
 
-    setInterval(listenToFirebase, 2500);
+    setInterval(listenToFirebase, 3000);
     listenToFirebase();
 
     function getMatches(alexL = [], marcL = []) {
@@ -278,6 +280,8 @@
       if (currentIndex >= NAMES.length) return;
       let curr = NAMES[currentIndex];
       
+      isSwiping = true; // Sperre Live-Pull kurz ab
+
       if (!likes[currentUser]) likes[currentUser] = [];
       if (!dislikes[currentUser]) dislikes[currentUser] = [];
 
@@ -299,6 +303,8 @@
       currentIndex++;
       syncToFirebase();
       render();
+
+      setTimeout(() => { isSwiping = false; }, 1500); // Sperre nach 1.5 Sek. wieder aufheben
     }
 
     function closeModal() {
