@@ -197,29 +197,44 @@
     let currentUser = 'Alex';
     let lastName = 'Petz';
     let currentIndex = 0;
-    // Nutzen nun Objekte (Key-Value) statt Arrays, um Firebase-Index-Konflikte zu verhindern
     let likes = { Alex: {}, Marcelina: {} };
     let dislikes = { Alex: {}, Marcelina: {} };
     let activeTab = 'swipe';
-    let isSwiping = false;
 
-    async function syncToFirebase() {
+    // NEU: Speichert nur den einzelnen Like direkt per PUT an den exakten Pfad, ohne andere zu überschreiben!
+    async function saveLikeToFirebase(user, name, isLiked) {
       if (!FIREBASE_URL || FIREBASE_URL.includes("https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/baby_data")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
-        await fetch(`${cleanUrl}/baby_data.json`, {
+        let encodedName = encodeURIComponent(name);
+        let endpoint = isLiked ? `${cleanUrl}/likes/${user}/${encodedName}.json` : `${cleanUrl}/dislikes/${user}/${encodedName}.json`;
+        
+        await fetch(endpoint, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lastName, likes, dislikes })
+          body: JSON.stringify(true)
         });
       } catch (e) {}
     }
 
-    async function listenToFirebase() {
-      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE") || isSwiping) return;
+    async function updateLastNameFirebase(val) {
+      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
-        const res = await fetch(`${cleanUrl}/baby_data.json`);
+        await fetch(`${cleanUrl}/lastName.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(val)
+        });
+      } catch (e) {}
+    }
+
+    // Hört komplett im Hintergrund auf alles und aktualisiert die Ansicht
+    async function listenToFirebase() {
+      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
+      try {
+        let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
+        const res = await fetch(`${cleanUrl}.json`);
         const data = await res.json();
         if (data) {
           if (data.lastName && data.lastName !== lastName) {
@@ -245,12 +260,12 @@
       } catch (e) {}
     }
 
-    setInterval(listenToFirebase, 3000);
+    setInterval(listenToFirebase, 2500);
     listenToFirebase();
 
     function getMatches(alexL = {}, marcL = {}) {
-      let alexKeys = Object.keys(alexL);
-      let marcKeys = Object.keys(marcL);
+      let alexKeys = Object.keys(alexL || {});
+      let marcKeys = Object.keys(marcL || {});
       let matchedNames = alexKeys.filter(n => marcKeys.includes(n));
       return NAMES.filter(n => matchedNames.includes(n.name));
     }
@@ -264,7 +279,7 @@
 
     function updateLastName(val) {
       lastName = val || '';
-      syncToFirebase();
+      updateLastNameFirebase(lastName);
       render();
     }
 
@@ -284,13 +299,12 @@
       if (currentIndex >= NAMES.length) return;
       let curr = NAMES[currentIndex];
       
-      isSwiping = true;
-
       if (!likes[currentUser]) likes[currentUser] = {};
       if (!dislikes[currentUser]) dislikes[currentUser] = {};
 
       if (dir === 'like') {
         likes[currentUser][curr.name] = true;
+        saveLikeToFirebase(currentUser, curr.name, true);
         
         let other = currentUser === 'Alex' ? 'Marcelina' : 'Alex';
         if (likes[other] && likes[other][curr.name]) {
@@ -299,13 +313,11 @@
         }
       } else {
         dislikes[currentUser][curr.name] = true;
+        saveLikeToFirebase(currentUser, curr.name, false);
       }
       
       currentIndex++;
-      syncToFirebase();
       render();
-
-      setTimeout(() => { isSwiping = false; }, 1500);
     }
 
     function closeModal() {
