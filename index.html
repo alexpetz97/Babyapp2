@@ -122,77 +122,61 @@
   </div>
 
   <script>
-    const FIREBASE_URL = "https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/baby_data";
+    const FIREBASE_URL = "https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app";
 
-    const rawNames = [
-      {n: 'Liam', g: 'boy', o: 'Irisch'}, {n: 'Emma', g: 'girl', o: 'Germanisch'},
-      {n: 'Noah', g: 'boy', o: 'Hebräisch'}, {n: 'Mia', g: 'girl', o: 'Skandinavisch'},
-      {n: 'Oliver', g: 'boy', o: 'Lateinisch'}, {n: 'Olivia', g: 'girl', o: 'Lateinisch'},
-      {n: 'Mateo', g: 'boy', o: 'Spanisch'}, {n: 'Sophia', g: 'girl', o: 'Griechisch'},
-      {n: 'Lucas', g: 'boy', o: 'Lateinisch'}, {n: 'Charlotte', g: 'girl', o: 'Französisch'},
-      {n: 'Leo', g: 'boy', o: 'Lateinisch'}, {n: 'Ella', g: 'girl', o: 'Deutsch'},
-      {n: 'Henry', g: 'boy', o: 'Germanisch'}, {n: 'Mila', g: 'girl', o: 'Slawisch'},
-      {n: 'Elijah', g: 'boy', o: 'Hebräisch'}, {n: 'Hannah', g: 'girl', o: 'Hebräisch'},
-      {n: 'Finn', g: 'boy', o: 'Irisch'}, {n: 'Lina', g: 'girl', o: 'Deutsch'},
-      {n: 'Leon', g: 'boy', o: 'Griechisch'}, {n: 'Clara', g: 'girl', o: 'Lateinisch'},
-      {n: 'Jonas', g: 'boy', o: 'Hebräisch'}, {n: 'Emilia', g: 'girl', o: 'Lateinisch'},
-      {n: 'Felix', g: 'boy', o: 'Lateinisch'}, {n: 'Leonie', g: 'girl', o: 'Lateinisch'},
-      {n: 'Julian', g: 'boy', o: 'Lateinisch'}, {n: 'Chloe', g: 'girl', o: 'Griechisch'},
-      {n: 'Max', g: 'boy', o: 'Lateinisch'}, {n: 'Amelie', g: 'girl', o: 'Germanisch'},
-      {n: 'Paul', g: 'boy', o: 'Lateinisch'}, {n: 'Sophie', g: 'girl', o: 'Griechisch'},
-      {n: 'Louis', g: 'boy', o: 'Französisch'}, {n: 'Zoe', g: 'girl', o: 'Griechisch'},
-      {n: 'Elias', g: 'boy', o: 'Hebräisch'}, {n: 'Nora', g: 'girl', o: 'Griechisch'},
-      {n: 'David', g: 'boy', o: 'Hebräisch'}, {n: 'Lara', g: 'girl', o: 'Griechisch'},
-      {n: 'Anton', g: 'boy', o: 'Lateinisch'}, {n: 'Luisa', g: 'girl', o: 'Deutsch'},
-      {n: 'Oscar', g: 'boy', o: 'Irisch'}, {n: 'Elena', g: 'girl', o: 'Griechisch'},
-      {n: 'Ben', g: 'boy', o: 'Hebräisch'}, {n: 'Sarah', g: 'girl', o: 'Hebräisch'},
-      {n: 'Tim', g: 'boy', o: 'Griechisch'}, {n: 'Laura', g: 'girl', o: 'Lateinisch'},
-      {n: 'Jan', g: 'boy', o: 'Friesisch'}, {n: 'Julia', g: 'girl', o: 'Lateinisch'},
-      {n: 'Nico', g: 'boy', o: 'Griechisch'}, {n: 'Anna', g: 'girl', o: 'Hebräisch'},
-      {n: 'Moritz', g: 'boy', o: 'Lateinisch'}, {n: 'Marie', g: 'girl', o: 'Französisch'},
-      {n: 'Tobias', g: 'boy', o: 'Hebräisch'}, {n: 'Lisa', g: 'girl', o: 'Heb/Deu'},
-      {n: 'Alexander', g: 'boy', o: 'Griechisch'}, {n: 'Lena', g: 'girl', o: 'Griechisch'},
-      {n: 'Philipp', g: 'boy', o: 'Griechisch'}, {n: 'Kim', g: 'girl', o: 'Altenglisch'},
-      {n: 'Daniel', g: 'boy', o: 'Hebräisch'}, {n: 'Pia', g: 'girl', o: 'Lateinisch'},
-      {n: 'Jasper', g: 'boy', o: 'Persisch'}, {n: 'Nele', g: 'girl', o: 'Friesisch'},
-      {n: 'Milan', g: 'boy', o: 'Slawisch'}, {n: 'Mara', g: 'girl', o: 'Hebräisch'},
-      {n: 'Hannes', g: 'boy', o: 'Hebräisch'}, {n: 'Jana', g: 'girl', o: 'Slawisch'},
-      {n: 'Samuel', g: 'boy', o: 'Hebräisch'}, {n: 'Sina', g: 'girl', o: 'Skandinavisch'},
-      {n: 'Gabriel', g: 'boy', o: 'Hebräisch'}, {n: 'Maja', g: 'girl', o: 'Skandinavisch'},
-      {n: 'Vincent', g: 'boy', o: 'Lateinisch'}, {n: 'Ida', g: 'girl', o: 'Germanisch'},
-      {n: 'Valentin', g: 'boy', o: 'Lateinisch'}, {n: 'Greta', g: 'girl', o: 'Germanisch'},
-      {n: 'Caspar', g: 'boy', o: 'Persisch'}, {n: 'Frida', g: 'girl', o: 'Nordisch'},
-      {n: 'Theodor', g: 'boy', o: 'Griechisch'}, {n: 'Mathilda', g: 'girl', o: 'Germanisch'},
-      {n: 'Arthur', g: 'boy', o: 'Keltisch'}, {n: 'Helena', g: 'girl', o: 'Griechisch'},
-      {n: 'Bruno', g: 'boy', o: 'Germanisch'}, {n: 'Carlotta', g: 'girl', o: 'Italienisch'},
-      {n: 'Emil', g: 'boy', o: 'Lateinisch'}, {n: 'Antonia', g: 'girl', o: 'Lateinisch'},
-      {n: 'Jonathan', g: 'boy', o: 'Hebräisch'}, {n: 'Marlene', g: 'girl', o: 'Germanisch'},
-      {n: 'Kilian', g: 'boy', o: 'Irisch'}, {n: 'Theresa', g: 'girl', o: 'Griechisch'},
-      {n: 'Leander', g: 'boy', o: 'Griechisch'}, {n: 'Victoria', g: 'girl', o: 'Lateinisch'},
-      {n: 'Silas', g: 'boy', o: 'Lateinisch'}, {n: 'Rosalie', g: 'girl', o: 'Französisch'},
-      {n: 'Victor', g: 'boy', o: 'Lateinisch'}, {n: 'Lotta', g: 'girl', o: 'Skandinavisch'},
-      {n: 'Caleb', g: 'boy', o: 'Hebräisch'}, {n: 'Stella', g: 'girl', o: 'Lateinisch'},
-      {n: 'Aiden', g: 'boy', o: 'Irisch'}, {n: 'Luna', g: 'girl', o: 'Lateinisch'},
-      {n: 'Connor', g: 'boy', o: 'Irisch'}, {n: 'Aurora', g: 'girl', o: 'Lateinisch'},
-      {n: 'Mason', g: 'boy', o: 'Englisch'}, {n: 'Ruby', g: 'girl', o: 'Englisch'},
-      {n: 'Logan', g: 'boy', o: 'Schottisch'}, {n: 'Ivy', g: 'girl', o: 'Englisch'},
-      {n: 'Hazel', g: 'girl', o: 'Englisch'}
+    // Massiver Pool aus echten, komplett unterschiedlichen europäischen & internationalen Vornamen (keine KI-Silben, keine künstlichen Endungen)
+    const NAMES = [
+      // Jungen
+      {n: 'Liam', g: 'boy', o: 'Irisch'}, {n: 'Noah', g: 'boy', o: 'Hebräisch'}, {n: 'Oliver', g: 'boy', o: 'Lateinisch'},
+      {n: 'Mateo', g: 'boy', o: 'Spanisch'}, {n: 'Lucas', g: 'boy', o: 'Lateinisch'}, {n: 'Leo', g: 'boy', o: 'Lateinisch'},
+      {n: 'Henry', g: 'boy', o: 'Germanisch'}, {n: 'Elijah', g: 'boy', o: 'Hebräisch'}, {n: 'Finn', g: 'boy', o: 'Irisch'},
+      {n: 'Leon', g: 'boy', o: 'Griechisch'}, {n: 'Jonas', g: 'boy', o: 'Hebräisch'}, {n: 'Felix', g: 'boy', o: 'Lateinisch'},
+      {n: 'Julian', g: 'boy', o: 'Lateinisch'}, {n: 'Max', g: 'boy', o: 'Lateinisch'}, {n: 'Paul', g: 'boy', o: 'Lateinisch'},
+      {n: 'Louis', g: 'boy', o: 'Französisch'}, {n: 'Elias', g: 'boy', o: 'Hebräisch'}, {n: 'David', g: 'boy', o: 'Hebräisch'},
+      {n: 'Anton', g: 'boy', o: 'Lateinisch'}, {n: 'Oscar', g: 'boy', o: 'Irisch'}, {n: 'Ben', g: 'boy', o: 'Hebräisch'},
+      {n: 'Tim', g: 'boy', o: 'Griechisch'}, {n: 'Jan', g: 'boy', o: 'Friesisch'}, {n: 'Nico', g: 'boy', o: 'Griechisch'},
+      {n: 'Moritz', g: 'boy', o: 'Lateinisch'}, {n: 'Tobias', g: 'boy', o: 'Hebräisch'}, {n: 'Alexander', g: 'boy', o: 'Griechisch'},
+      {n: 'Philipp', g: 'boy', o: 'Griechisch'}, {n: 'Daniel', g: 'boy', o: 'Hebräisch'}, {n: 'Jasper', g: 'boy', o: 'Persisch'},
+      {n: 'Milan', g: 'boy', o: 'Slawisch'}, {n: 'Hannes', g: 'boy', o: 'Hebräisch'}, {n: 'Samuel', g: 'boy', o: 'Hebräisch'},
+      {n: 'Gabriel', g: 'boy', o: 'Hebräisch'}, {n: 'Vincent', g: 'boy', o: 'Lateinisch'}, {n: 'Valentin', g: 'boy', o: 'Lateinisch'},
+      {n: 'Caspar', g: 'boy', o: 'Persisch'}, {n: 'Theodor', g: 'boy', o: 'Griechisch'}, {n: 'Arthur', g: 'boy', o: 'Keltisch'},
+      {n: 'Bruno', g: 'boy', o: 'Germanisch'}, {n: 'Emil', g: 'boy', o: 'Lateinisch'}, {n: 'Jonathan', g: 'boy', o: 'Hebräisch'},
+      {n: 'Kilian', g: 'boy', o: 'Irisch'}, {n: 'Leander', g: 'boy', o: 'Griechisch'}, {n: 'Silas', g: 'boy', o: 'Lateinisch'},
+      {n: 'Victor', g: 'boy', o: 'Lateinisch'}, {n: 'Caleb', g: 'boy', o: 'Hebräisch'}, {n: 'Aiden', g: 'boy', o: 'Irisch'},
+      {n: 'Connor', g: 'boy', o: 'Irisch'}, {n: 'Mason', g: 'boy', o: 'Englisch'}, {n: 'Logan', g: 'boy', o: 'Schottisch'},
+      {n: 'Milo', g: 'boy', o: 'Slawisch'}, {n: 'Lian', g: 'boy', o: 'Asiatisch'}, {n: 'Kian', g: 'boy', o: 'Persisch'},
+      {n: 'Mio', g: 'boy', o: 'Japanisch'}, {n: 'Mika', g: 'boy', o: 'Friesisch'}, {n: 'Malte', g: 'boy', o: 'Germanisch'},
+      {n: 'Mats', g: 'boy', o: 'Nordisch'}, {n: 'Lars', g: 'boy', o: 'Skandinavisch'}, {n: 'Nils', g: 'boy', o: 'Schwedisch'},
+      {n: 'Stellan', g: 'boy', o: 'Schwedisch'}, {n: 'Arvid', g: 'boy', o: 'Nordisch'}, {n: 'Bela', g: 'boy', o: 'Ungarisch'},
+      {n: 'Enno', g: 'boy', o: 'Friesisch'}, {n: 'Fiete', g: 'boy', o: 'Friesisch'}, {n: 'Jaro', g: 'boy', o: 'Slawisch'},
+      {n: 'Karlo', g: 'boy', o: 'Slawisch'}, {n: 'Nevio', g: 'boy', o: 'Italienisch'}, {n: 'Rocco', g: 'boy', o: 'Italienisch'},
+      {n: 'Sandro', g: 'boy', o: 'Italienisch'}, {n: 'Tiago', g: 'boy', o: 'Portugiesisch'}, {n: 'Vitus', g: 'boy', o: 'Lateinisch'},
+      {n: 'Aurel', g: 'boy', o: 'Lateinisch'}, {n: 'Dario', g: 'boy', o: 'Italienisch'}, {n: 'Fabio', g: 'boy', o: 'Italienisch'},
+      // Mädchen
+      {n: 'Emma', g: 'girl', o: 'Germanisch'}, {n: 'Mia', g: 'girl', o: 'Skandinavisch'}, {n: 'Olivia', g: 'girl', o: 'Lateinisch'},
+      {n: 'Sophia', g: 'girl', o: 'Griechisch'}, {n: 'Charlotte', g: 'girl', o: 'Französisch'}, {n: 'Ella', g: 'girl', o: 'Deutsch'},
+      {n: 'Mila', g: 'girl', o: 'Slawisch'}, {n: 'Hannah', g: 'girl', o: 'Hebräisch'}, {n: 'Lina', g: 'girl', o: 'Deutsch'},
+      {n: 'Clara', g: 'girl', o: 'Lateinisch'}, {n: 'Emilia', g: 'girl', o: 'Lateinisch'}, {n: 'Leonie', g: 'girl', o: 'Lateinisch'},
+      {n: 'Chloe', g: 'girl', o: 'Griechisch'}, {n: 'Amelie', g: 'girl', o: 'Germanisch'}, {n: 'Sophie', g: 'girl', o: 'Griechisch'},
+      {n: 'Zoe', g: 'girl', o: 'Griechisch'}, {n: 'Nora', g: 'girl', o: 'Griechisch'}, {n: 'Lara', g: 'girl', o: 'Griechisch'},
+      {n: 'Luisa', g: 'girl', o: 'Deutsch'}, {n: 'Elena', g: 'girl', o: 'Griechisch'}, {n: 'Sarah', g: 'girl', o: 'Hebräisch'},
+      {n: 'Laura', g: 'girl', o: 'Lateinisch'}, {n: 'Julia', g: 'girl', o: 'Lateinisch'}, {n: 'Anna', g: 'girl', o: 'Hebräisch'},
+      {n: 'Marie', g: 'girl', o: 'Französisch'}, {n: 'Lisa', g: 'girl', o: 'Heb/Deu'}, {n: 'Lena', g: 'girl', o: 'Griechisch'},
+      {n: 'Kim', g: 'girl', o: 'Altenglisch'}, {n: 'Pia', g: 'girl', o: 'Lateinisch'}, {n: 'Nele', g: 'girl', o: 'Friesisch'},
+      {n: 'Mara', g: 'girl', o: 'Hebräisch'}, {n: 'Jana', g: 'girl', o: 'Slawisch'}, {n: 'Sina', g: 'girl', o: 'Skandinavisch'},
+      {n: 'Maja', g: 'girl', o: 'Skandinavisch'}, {n: 'Ida', g: 'girl', o: 'Germanisch'}, {n: 'Greta', g: 'girl', o: 'Germanisch'},
+      {n: 'Frida', g: 'girl', o: 'Nordisch'}, {n: 'Mathilda', g: 'girl', o: 'Germanisch'}, {n: 'Helena', g: 'girl', o: 'Griechisch'},
+      {n: 'Carlotta', g: 'girl', o: 'Italienisch'}, {n: 'Antonia', g: 'girl', o: 'Lateinisch'}, {n: 'Marlene', g: 'girl', o: 'Germanisch'},
+      {n: 'Theresa', g: 'girl', o: 'Griechisch'}, {n: 'Victoria', g: 'girl', o: 'Lateinisch'}, {n: 'Rosalie', g: 'girl', o: 'Französisch'},
+      {n: 'Lotta', g: 'girl', o: 'Skandinavisch'}, {n: 'Stella', g: 'girl', o: 'Lateinisch'}, {n: 'Luna', g: 'girl', o: 'Lateinisch'},
+      {n: 'Aurora', g: 'girl', o: 'Lateinisch'}, {n: 'Ruby', g: 'girl', o: 'Englisch'}, {n: 'Ivy', g: 'girl', o: 'Englisch'},
+      {n: 'Hazel', g: 'girl', o: 'Englisch'}, {n: 'Amalia', g: 'girl', o: 'Lateinisch'}, {n: 'Aurelia', g: 'girl', o: 'Lateinisch'},
+      {n: 'Celine', g: 'girl', o: 'Französisch'}, {n: 'Enja', g: 'girl', o: 'Friesisch'}, {n: 'Feline', g: 'girl', o: 'Lateinisch'},
+      {n: 'Malia', g: 'girl', o: 'Hawaiianisch'}, {n: 'Noelia', g: 'girl', o: 'Spanisch'}, {n: 'Rania', g: 'girl', o: 'Arabisch'},
+      {n: 'Saphira', g: 'girl', o: 'Griechisch'}, {n: 'Anouk', g: 'girl', o: 'Hebräisch'}, {n: 'Cosima', g: 'girl', o: 'Italienisch'},
+      {n: 'Elif', g: 'girl', o: 'Türkisch'}, {n: 'Florentine', g: 'girl', o: 'Lateinisch'}, {n: 'Hermine', g: 'girl', o: 'Germanisch'},
+      {n: 'Nika', g: 'girl', o: 'Slawisch'}, {n: 'Svea', g: 'girl', o: 'Skandinavisch'}, {n: 'Yara', g: 'girl', o: 'Arabisch'}
     ];
-
-    const NAMES = [];
-    let idCounter = 0;
-    while(NAMES.length < 5200) {
-      let base = rawNames[idCounter % rawNames.length];
-      let suffixNum = Math.floor(idCounter / rawNames.length);
-      let finalName = base.n + (suffixNum > 0 ? ' ' + (['James', 'Paul', 'David', 'Lee', 'Ray', 'Noel'][suffixNum % 6]) : '');
-      
-      NAMES.push({
-        name: finalName,
-        gender: base.g,
-        origin: base.o
-      });
-      idCounter++;
-    }
 
     let currentUser = 'Alex';
     let lastName = 'Petz';
@@ -201,14 +185,12 @@
     let dislikes = { Alex: {}, Marcelina: {} };
     let activeTab = 'swipe';
 
-    // Sicheres Speichern per PATCH, damit Firebase automatisch die übergeordneten Ordner anlegt
     async function saveLikeToFirebase(user, name, isLiked) {
       if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
         let payload = {};
         payload[name] = true;
-
         let endpoint = isLiked ? `${cleanUrl}/likes/${user}.json` : `${cleanUrl}/dislikes/${user}.json`;
         
         await fetch(endpoint, {
