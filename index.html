@@ -180,9 +180,12 @@
       {name: 'Aurelia', gender: 'girl', origin: 'Lateinisch'}, {name: 'Milo', gender: 'boy', origin: 'Slawisch'}
     ];
 
-    let currentUser = 'Alex';
+    let currentUser = localStorage.getItem('baby_current_user') || 'Alex';
     let lastName = 'Petz';
-    let currentIndex = 0;
+    
+    // NEU: Lädt den gespeicherten Index vom iPhone (pro Profil getrennt gespeichert!)
+    let currentIndex = parseInt(localStorage.getItem(`baby_index_${currentUser}`)) || 0;
+    
     let likes = { Alex: {}, Marcelina: {} };
     let dislikes = { Alex: {}, Marcelina: {} };
     let activeTab = 'swipe';
@@ -257,6 +260,10 @@
 
     function setUser(u) {
       currentUser = u;
+      localStorage.setItem('baby_current_user', u);
+      // Index für das gewählte Profil laden
+      currentIndex = parseInt(localStorage.getItem(`baby_index_${currentUser}`)) || 0;
+
       document.getElementById('btn-alex').className = `px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${u==='Alex'?'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md':'text-gray-600 hover:text-gray-900'}`;
       document.getElementById('btn-marcelina').className = `px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${u==='Marcelina'?'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md':'text-gray-600 hover:text-gray-900'}`;
       render();
@@ -302,6 +309,9 @@
       }
       
       currentIndex++;
+      // NEU: Fortschritt sofort auf dem iPhone speichern
+      localStorage.setItem(`baby_index_${currentUser}`, currentIndex);
+      
       render();
     }
 
@@ -311,7 +321,7 @@
 
     function render() {
       if (currentIndex >= NAMES.length) {
-        currentIndex = 0;
+        currentIndex = NAMES.length;
       }
 
       let alexLikes = likes.Alex || {};
@@ -324,6 +334,10 @@
       document.getElementById('like-count').innerText = myLikesArr.length;
       document.getElementById('lastname-input').value = lastName;
 
+      // Profil-Buttons beim Laden korrekt einfärben
+      document.getElementById('btn-alex').className = `px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${currentUser==='Alex'?'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md':'text-gray-600 hover:text-gray-900'}`;
+      document.getElementById('btn-marcelina').className = `px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${currentUser==='Marcelina'?'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md':'text-gray-600 hover:text-gray-900'}`;
+
       if (currentIndex < NAMES.length) {
         let curr = NAMES[currentIndex];
         document.getElementById('name-display').innerText = curr.name;
@@ -333,6 +347,9 @@
         let tag = document.getElementById('gender-tag');
         tag.innerText = curr.gender === 'boy' ? 'Junge' : 'Mädchen';
         tag.className = `px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm ${curr.gender==='boy'?'bg-sky-100 text-sky-600 border border-sky-200/50':'bg-pink-100 text-pink-600 border border-pink-200/50'}`;
+      } else {
+        document.getElementById('name-display').innerText = 'Alle durch!';
+        document.getElementById('surname-display').innerText = '🎉';
       }
 
       let mList = document.getElementById('matches-list');
