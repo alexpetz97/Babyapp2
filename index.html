@@ -193,7 +193,7 @@
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
         let payload = {};
         payload[name] = true;
-        let endpoint = isLiked ? `${cleanUrl}/likes/${user}.json` : `${cleanUrl}/dislikes/${user}.json`;
+        let endpoint = isLiked ? `${cleanUrl}/baby_data/likes/${user}.json` : `${cleanUrl}/baby_data/dislikes/${user}.json`;
         
         await fetch(endpoint, {
           method: 'PATCH',
@@ -207,7 +207,7 @@
       if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
-        await fetch(`${cleanUrl}.json`, {
+        await fetch(`${cleanUrl}/baby_data.json`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lastName: val })
@@ -219,7 +219,7 @@
       if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
       try {
         let cleanUrl = FIREBASE_URL.endsWith('/') ? FIREBASE_URL.slice(0, -1) : FIREBASE_URL;
-        const res = await fetch(`${cleanUrl}.json`);
+        const res = await fetch(`${cleanUrl}/baby_data.json`);
         const data = await res.json();
         if (data) {
           if (data.lastName && data.lastName !== lastName) {
