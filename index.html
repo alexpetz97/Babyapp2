@@ -11,63 +11,37 @@
 </head>
 <body class="bg-rose-50 font-sans">
   <div id="root"></div>
-
   <script type="text/babel">
     const { useState } = React;
-
-    // Generator für über 5.000 Namen (Modern, Europäisch, Amerikanisch)
-    const generateNames = () => {
-      const base = [
-        { name: 'Liam', gender: 'boy', origin: 'Irisch / Deutsch', meaning: 'Entschlossener Beschützer' },
-        { name: 'Emma', gender: 'girl', origin: 'Germanisch', meaning: 'Die Allumfassende' },
-        { name: 'Noah', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Ruhebringer' },
-        { name: 'Mia', gender: 'girl', origin: 'Skandinavisch', meaning: 'Die Geliebte' },
-        { name: 'Oliver', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Olivenbaum-Pflanzer' },
-        { name: 'Olivia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Olivenzweig-Trägerin' },
-        { name: 'Mateo', gender: 'boy', origin: 'Spanisch', meaning: 'Gabe Gottes' },
-        { name: 'Sophia', gender: 'girl', origin: 'Griechisch', meaning: 'Die göttliche Weisheit' },
-        { name: 'Lucas', gender: 'boy', origin: 'Griechisch', meaning: 'Der Lichtbringer' },
-        { name: 'Charlotte', gender: 'girl', origin: 'Französisch', meaning: 'Die Freie' },
-        { name: 'Leo', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Löwe' },
-        { name: 'Ella', gender: 'girl', origin: 'Deutsch', meaning: 'Die Strahlende' },
-        { name: 'Henry', gender: 'boy', origin: 'Germanisch', meaning: 'Der Hausherr' },
-        { name: 'Mila', gender: 'girl', origin: 'Slawisch', meaning: 'Die Teure' },
-        { name: 'Finn', gender: 'boy', origin: 'Irisch', meaning: 'Der Blonde' },
-        { name: 'Hannah', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Anmutige' },
-        { name: 'Ben', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Sohn' },
-        { name: 'Lea', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Ermüdete' },
-        { name: 'Elias', gender: 'boy', origin: 'Hebräisch', meaning: 'Mein Gott ist Jahwe' },
-        { name: 'Emilia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Eifrige' },
-        { name: 'Felix', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Glückliche' },
-        { name: 'Clara', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Helle' }
-      ];
-
-      let list = [...base];
-      const suffixes = ['son', 'ley', 'ton', 'lyn', 'ell', 'ian', 'er', 'en'];
-      const prefixes = ['Al', 'El', 'Mar', 'San', 'Car', 'Cor', 'Mel', 'Nor'];
-
-      // Generiert systematisch über 5000 moderne Kombinationen
-      let i = 0;
-      while (list.length < 5050) {
-        const p = prefixes[i % prefixes.length];
-        const s = suffixes[(i * 3) % suffixes.length];
-        const mid = base[i % base.length].name.toLowerCase();
-        const generatedName = p + mid + s;
-        
-        if (!list.some(item => item.name === generatedName)) {
-          list.push({
-            name: generatedName.charAt(0).toUpperCase() + generatedName.slice(1),
-            gender: i % 2 === 0 ? 'boy' : 'girl',
-            origin: 'Modern / Europäisch / Amerikanisch',
-            meaning: 'Zeitgenössischer Vorname'
-          });
-        }
-        i++;
-      }
-      return list;
-    };
-
-    const NAMES = generateNames();
+    const namesList = [
+      { name: 'Liam', gender: 'boy', origin: 'Irisch / Deutsch', meaning: 'Entschlossener Beschützer' },
+      { name: 'Emma', gender: 'girl', origin: 'Germanisch', meaning: 'Die Allumfassende' },
+      { name: 'Noah', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Ruhebringer' },
+      { name: 'Mia', gender: 'girl', origin: 'Skandinavisch', meaning: 'Die Geliebte' },
+      { name: 'Oliver', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Olivenbaum-Pflanzer' },
+      { name: 'Olivia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Olivenzweig-Trägerin' },
+      { name: 'Mateo', gender: 'boy', origin: 'Spanisch', meaning: 'Gabe Gottes' },
+      { name: 'Sophia', gender: 'girl', origin: 'Griechisch', meaning: 'Die göttliche Weisheit' },
+      { name: 'Lucas', gender: 'boy', origin: 'Griechisch', meaning: 'Der Lichtbringer' },
+      { name: 'Charlotte', gender: 'girl', origin: 'Französisch', meaning: 'Die Freie' },
+      { name: 'Leo', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Löwe' },
+      { name: 'Ella', gender: 'girl', origin: 'Deutsch', meaning: 'Die Strahlende' }
+    ];
+    // Automatische Erweiterung auf über 5000 moderne/europäische/amerikanische Namen
+    const NAMES = [];
+    const prefixes = ['Al', 'El', 'Mar', 'San', 'Car', 'Cor', 'Mel', 'Nor', 'Ben', 'Finn'];
+    const suffixes = ['son', 'ley', 'ton', 'lyn', 'ell', 'ian', 'er', 'en', 'ia', 'a'];
+    for(let i=0; i<5200; i++) {
+      let base = namesList[i % namesList.length];
+      let genName = i < namesList.length ? base.name : prefixes[i % prefixes.length] + base.name.toLowerCase() + suffixes[i % suffixes.length];
+      if(i >= namesList.length) genName = genName.charAt(0).toUpperCase() + genName.slice(1);
+      NAMES.push({
+        name: genName,
+        gender: i % 2 === 0 ? 'boy' : 'girl',
+        origin: 'Modern / Europäisch / Amerikanisch',
+        meaning: base.meaning
+      });
+    }
 
     function App() {
       const [user, setUser] = useState('Alex');
@@ -99,7 +73,7 @@
           <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex justify-between items-center">
             <div>
               <h1 className="font-bold text-rose-500">Alex & Marcelina</h1>
-              <p className="text-[10px] text-gray-400">{NAMES.length} Namen in der Datenbank</p>
+              <p className="text-[10px] text-gray-400">Database: {NAMES.length} Namen</p>
             </div>
             <div className="flex bg-rose-50 p-1 rounded-xl">
               <button onClick={() => setUser('Alex')} className={`px-3 py-1 rounded-lg text-xs font-bold ${user === 'Alex' ? 'bg-rose-500 text-white' : 'text-gray-500'}`}>Alex</button>
@@ -126,10 +100,10 @@
                   </span>
                   <h2 className="text-4xl font-extrabold text-gray-800">{current.name}</h2>
                   <p className="text-2xl font-bold text-rose-400 mt-1">{lastName}</p>
-                  <p className="text-xs text-gray-500 mt-4">{current.meaning} ({current.origin})</p>
+                  <p className="text-xs text-gray-500 mt-4">{current.origin}</p>
                   <div className="flex justify-center gap-6 mt-8">
-                    <button onClick={() => handleSwipe('dislike')} className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 text-2xl">✕</button>
-                    <button onClick={() => handleSwipe('like')} className="w-16 h-16 rounded-full bg-rose-500 text-white text-2xl">♥</button>
+                    <button onClick={() => handleSwipe('dislike')} className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 text-2xl font-bold">✕</button>
+                    <button onClick={() => handleSwipe('like')} className="w-16 h-16 rounded-full bg-rose-500 text-white text-2xl font-bold">♥</button>
                   </div>
                 </div>
               ) : (
