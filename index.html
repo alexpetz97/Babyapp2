@@ -10,12 +10,12 @@
   </style>
 </head>
 <body class="bg-rose-50 min-h-screen p-4 flex flex-col items-center">
-  <div className="w-full max-w-md">
+  <div class="w-full max-w-md">
     <!-- Header -->
     <div class="bg-white rounded-2xl p-4 shadow-sm mb-4 flex justify-between items-center">
       <div>
         <h1 class="font-bold text-rose-500 text-lg">Alex & Marcelina</h1>
-        <p id="db-count" class="text-[10px] text-gray-400">5200 Namen geladen</p>
+        <p id="sync-status" class="text-[10px] text-green-500 font-bold">🟢 Live-Synchronisiert</p>
       </div>
       <div class="flex bg-rose-50 p-1 rounded-xl">
         <button id="btn-alex" onclick="setUser('Alex')" class="px-3 py-1 rounded-lg text-xs font-bold bg-rose-500 text-white">Alex</button>
@@ -75,7 +75,9 @@
   </div>
 
   <script>
-    // 5200 Namensdatenbank
+    // ⚠️ DEINE FIREBASE REALTIME DATABASE URL HIER EINFÜGEN:
+    const FIREBASE_URL = "https://babynameapp-dd66f-default-rtdb.europe-west1.firebasedatabase.app/";
+
     const baseNames = [
       { name: 'Liam', gender: 'boy', origin: 'Irisch / Deutsch' },
       { name: 'Emma', gender: 'girl', origin: 'Germanisch' },
@@ -106,21 +108,46 @@
       });
     }
 
-    // App State mit LocalStorage (Synchronisiert Likes & Dislikes auf dem Gerät)
     let currentUser = 'Alex';
-    let lastName = localStorage.getItem('baby_lastname') || 'Petz';
-    let currentIndex = parseInt(localStorage.getItem('baby_index') || '0');
-    let likes = JSON.parse(localStorage.getItem('baby_likes') || '{"Alex":[],"Marcelina":[]}');
-    let dislikes = JSON.parse(localStorage.getItem('baby_dislikes') || '{"Alex":[],"Marcelina":[]}');
+    let lastName = 'Müller';
+    let currentIndex = 0;
+    let likes = { Alex: [], Marcelina: [] };
+    let dislikes = { Alex: [], Marcelina: [] };
+    let activeTab = 'swipe';
 
-    document.getElementById('lastname-input').value = lastName;
-
-    function saveState() {
-      localStorage.setItem('baby_lastname', lastName);
-      localStorage.setItem('baby_index', currentIndex.toString());
-      localStorage.setItem('baby_likes', JSON.stringify(likes));
-      localStorage.setItem('baby_dislikes', JSON.stringify(dislikes));
+    // Firebase Sync Engine
+    async function syncToFirebase() {
+      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
+      try {
+        await fetch(`${FIREBASE_URL}/baby_data.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lastName, likes, dislikes })
+        });
+      } catch (e) {
+        console.error("Sync error:", e);
+      }
     }
+
+    async function listenToFirebase() {
+      if (!FIREBASE_URL || FIREBASE_URL.includes("HIER_DEINE")) return;
+      try {
+        const res = await fetch(`${FIREBASE_URL}/baby_data.json`);
+        const data = await res.json();
+        if (data) {
+          if (data.lastName) lastName = data.lastName;
+          if (data.likes) likes = data.likes;
+          if (data.dislikes) dislikes = data.dislikes;
+          render();
+        }
+      } catch (e) {
+        console.error("Pull error:", e);
+      }
+    }
+
+    // Automatische Aktualisierung alle 3 Sekunden
+    setInterval(listenToFirebase, 3000);
+    listenToFirebase();
 
     function setUser(u) {
       currentUser = u;
@@ -131,11 +158,12 @@
 
     function updateLastName(val) {
       lastName = val || '';
-      saveState();
+      syncToFirebase();
       render();
     }
 
     function setTab(tab) {
+      activeTab = tab;
       document.getElementById('view-swipe').classList.toggle('hidden', tab !== 'swipe');
       document.getElementById('view-matches').classList.toggle('hidden', tab !== 'matches');
       document.getElementById('view-likes').classList.toggle('hidden', tab !== 'likes');
@@ -150,12 +178,15 @@
       if (currentIndex >= NAMES.length) return;
       let curr = NAMES[currentIndex];
       
+      if (!likes[currentUser]) likes[currentUser] = [];
+      if (!dislikes[currentUser]) dislikes[currentUser] = [];
+
       if (dir === 'like') {
         if (!likes[currentUser].includes(curr.name)) {
           likes[currentUser].push(curr.name);
         }
         let other = currentUser === 'Alex' ? 'Marcelina' : 'Alex';
-        if (likes[other].includes(curr.name)) {
+        if (likes[other] && likes[other].includes(curr.name)) {
           document.getElementById('match-name-text').innerText = `${curr.name} ${lastName}`;
           document.getElementById('match-modal').classList.remove('hidden');
         }
@@ -166,7 +197,7 @@
       }
       
       currentIndex++;
-      saveState();
+      syncToFirebase();
       render();
     }
 
@@ -175,12 +206,15 @@
     }
 
     function render() {
-      // Counter
-      let matches = NAMES.filter(n => likes.Alex.includes(n.name) && likes.Marcelina.includes(n.name));
+      let alexLikes = likes.Alex || [];
+      let marcelinaLikes = likes.Marcelina || [];
+      let matches = NAMES.filter(n => alexLikes.includes(n.name) && marcelinaLikes.includes(n.name));
+      
       document.getElementById('match-count').innerText = matches.length;
-      document.getElementById('like-count').innerText = likes[currentUser].length;
+      document.getElementById('like-count').innerText = (likes[currentUser] || []).length;
+      document.getElementById('lastname-input').value = lastName;
 
-      // Current Card
+      // Card
       if (currentIndex < NAMES.length) {
         let curr = NAMES[currentIndex];
         document.getElementById('name-display').innerText = curr.name;
@@ -195,7 +229,7 @@
         document.getElementById('surname-display').innerText = '🎉';
       }
 
-      // Render Matches
+      // Matches List
       let mList = document.getElementById('matches-list');
       if (matches.length === 0) {
         mList.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Noch keine Matches. Swipt weiter!</div>`;
@@ -211,10 +245,10 @@
         `).join('');
       }
 
-      // Render Likes
+      // Likes List
       document.getElementById('likes-title').innerText = `Deine Likes (${currentUser}):`;
       let lList = document.getElementById('likes-list');
-      let myL = likes[currentUser];
+      let myL = likes[currentUser] || [];
       if (myL.length === 0) {
         lList.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Du hast noch keine Namen geliked.</div>`;
       } else {
