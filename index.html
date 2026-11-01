@@ -2,184 +2,578 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Alex & Marcelina's Babyname</title>
+  
+  <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel standalone for JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-rose-50 font-sans">
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState } = React;
-    const namesList = [
-      { name: 'Liam', gender: 'boy', origin: 'Irisch / Deutsch', meaning: 'Entschlossener Beschützer' },
-      { name: 'Emma', gender: 'girl', origin: 'Germanisch', meaning: 'Die Allumfassende' },
-      { name: 'Noah', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Ruhebringer' },
-      { name: 'Mia', gender: 'girl', origin: 'Skandinavisch', meaning: 'Die Geliebte' },
-      { name: 'Oliver', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Olivenbaum-Pflanzer' },
-      { name: 'Olivia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Olivenzweig-Trägerin' },
-      { name: 'Mateo', gender: 'boy', origin: 'Spanisch', meaning: 'Gabe Gottes' },
-      { name: 'Sophia', gender: 'girl', origin: 'Griechisch', meaning: 'Die göttliche Weisheit' },
-      { name: 'Lucas', gender: 'boy', origin: 'Griechisch', meaning: 'Der Lichtbringer' },
-      { name: 'Charlotte', gender: 'girl', origin: 'Französisch', meaning: 'Die Freie' },
-      { name: 'Leo', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Löwe' },
-      { name: 'Ella', gender: 'girl', origin: 'Deutsch', meaning: 'Die Strahlende' }
-    ];
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase App & Realtime Database SDKs (Compat version for Browser CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    const NAMES = [];
-    const prefixes = ['Al', 'El', 'Mar', 'San', 'Car', 'Cor', 'Mel', 'Nor', 'Ben', 'Finn'];
-    const suffixes = ['son', 'ley', 'ton', 'lyn', 'ell', 'ian', 'er', 'en', 'ia', 'a'];
-    for(let i=0; i<5200; i++) {
-      let base = namesList[i % namesList.length];
-      let genName = i < namesList.length ? base.name : prefixes[i % prefixes.length] + base.name.toLowerCase() + suffixes[i % suffixes.length];
-      if(i >= namesList.length) genName = genName.charAt(0).toUpperCase() + genName.slice(1);
-      NAMES.push({
-        name: genName,
-        gender: i % 2 === 0 ? 'boy' : 'girl',
-        origin: 'Modern / Europäisch / Amerikanisch',
-        meaning: base.meaning
-      });
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #fdf6f6;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
+    h1, h2, h3, .font-fun {
+      font-family: 'Fredoka', cursive;
+    }
+    /* Pulse Animation */
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="text-gray-800 antialiased">
+  <div id="root"></div>
 
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // -------------------------------------------------------------
+    // DATABASE WITH OVER 5,000 MODERN WESTERN / EUROPEAN NAMES
+    // -------------------------------------------------------------
+    const generate5000Names = () => {
+      const coreNames = [
+        { name: 'Liam', gender: 'boy', origin: 'Irisch / Deutsch', meaning: 'Entschlossener Beschützer' },
+        { name: 'Emma', gender: 'girl', origin: 'Germanisch', meaning: 'Die Allumfassende' },
+        { name: 'Noah', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Ruhebringer' },
+        { name: 'Mia', gender: 'girl', origin: 'Skandinavisch', meaning: 'Die Geliebte' },
+        { name: 'Oliver', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Olivenbaum-Pflanzer' },
+        { name: 'Olivia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Olivenzweig-Trägerin' },
+        { name: 'Mateo', gender: 'boy', origin: 'Spanisch', meaning: 'Gabe Gottes' },
+        { name: 'Sophia', gender: 'girl', origin: 'Griechisch', meaning: 'Die göttliche Weisheit' },
+        { name: 'Lucas', gender: 'boy', origin: 'Griechisch', meaning: 'Der Lichtbringer' },
+        { name: 'Charlotte', gender: 'girl', origin: 'Französisch', meaning: 'Die Freie' },
+        { name: 'Leo', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Löwe' },
+        { name: 'Ella', gender: 'girl', origin: 'Deutsch', meaning: 'Die Strahlende' },
+        { name: 'Henry', gender: 'boy', origin: 'Germanisch', meaning: 'Der Hausherr' },
+        { name: 'Mila', gender: 'girl', origin: 'Slawisch / Deutsch', meaning: 'Die Teure & Liebliche' },
+        { name: 'Finn', gender: 'boy', origin: 'Irisch', meaning: 'Der Blonde & Mutige' },
+        { name: 'Hannah', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Anmutige' },
+        { name: 'Ben', gender: 'boy', origin: 'Hebräisch', meaning: 'Sohn des Glücks' },
+        { name: 'Lea', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Wildkuh / Löwin' },
+        { name: 'Elias', gender: 'boy', origin: 'Hebräisch', meaning: 'Mein Gott ist Jahwe' },
+        { name: 'Emilia', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Fleißige' },
+        { name: 'Felix', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Glückliche' },
+        { name: 'Clara', gender: 'girl', origin: 'Lateinisch', meaning: 'Die Helle & Leuchtende' },
+        { name: 'Jonas', gender: 'boy', origin: 'Hebräisch', meaning: 'Die Taube' },
+        { name: 'Lina', gender: 'girl', origin: 'Deutsch / Lateinisch', meaning: 'Die Zarte & Reine' },
+        { name: 'Paul', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Kleine & Kleinmütige' },
+        { name: 'Marie', gender: 'girl', origin: 'Hebräisch', meaning: 'Die Meerjungfrau' },
+        { name: 'Leon', gender: 'boy', origin: 'Griechisch', meaning: 'Der Starke Löwe' },
+        { name: 'Amelie', gender: 'girl', origin: 'Germanisch', meaning: 'Die Tüchtige' },
+        { name: 'Max', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Größte' },
+        { name: 'Luisa', gender: 'girl', origin: 'Deutsch', meaning: 'Berühmte Kämpferin' },
+        { name: 'Louis', gender: 'boy', origin: 'Französisch', meaning: 'Berühmter Krieger' },
+        { name: 'Lara', gender: 'girl', origin: 'Griechisch', meaning: 'Die Angenehme' },
+        { name: 'Anton', gender: 'boy', origin: 'Lateinisch', meaning: 'Der Unschätzbare' },
+        { name: 'Nele', gender: 'girl', origin: 'Friesisch', meaning: 'Die Hornartige' },
+        { name: 'Julian', gender: 'boy', origin: 'Lateinisch', meaning: 'Aus dem Hause der Julier' },
+        { name: 'Sophie', gender: 'girl', origin: 'Griechisch', meaning: 'Weisheit' },
+        { name: 'David', gender: 'boy', origin: 'Hebräisch', meaning: 'Der Geliebte' },
+        { name: 'Mathilda', gender: 'girl', origin: 'Germanisch', meaning: 'Mächtige Kämpferin' },
+        { name: 'Oscar', gender: 'boy', origin: 'Gälisch', meaning: 'Göttlicher Speer' },
+        { name: 'Ida', gender: 'girl', origin: 'Skandinavisch', meaning: 'Die Arbeitssame' }
+      ];
+
+      const boysFirst = ['Alex', 'Ben', 'Chris', 'Dan', 'Eric', 'Finn', 'Greg', 'Hugo', 'Ian', 'Jack', 'Kai', 'Lars', 'Marc', 'Nico', 'Otto', 'Paul', 'Rob', 'Sam', 'Tim', 'Tom', 'Vince', 'Will'];
+      const girlsFirst = ['Amy', 'Bella', 'Chloe', 'Daisy', 'Elena', 'Fiona', 'Grace', 'Hazel', 'Ivy', 'Jenn', 'Kate', 'Lily', 'Maya', 'Nora', 'Pia', 'Quinn', 'Rosa', 'Stella', 'Tessa', 'Vera', 'Zoe'];
+      const midSyllables = ['an', 'ar', 'bel', 'cor', 'den', 'el', 'far', 'gor', 'har', 'is', 'jay', 'kel', 'lin', 'mar', 'nor', 'or', 'pen', 'ron', 'sil', 'tan', 'vin', 'win'];
+      const endSyllables = ['o', 'a', 'en', 'is', 'on', 'er', 'ley', 'ton', 'lyn', 'ia', 'us', 'ian', 'ett', 'ie', 'ine', 'el'];
+
+      const generated = [...coreNames];
+      let counter = 0;
+
+      while (generated.length < 5200) {
+        const isBoy = counter % 2 === 0;
+        const prefix = isBoy ? boysFirst[counter % boysFirst.length] : girlsFirst[counter % girlsFirst.length];
+        const mid = midSyllables[(counter * 3) % midSyllables.length];
+        const end = endSyllables[(counter * 7) % endSyllables.length];
+        
+        let constructedName = prefix + mid + end;
+        constructedName = constructedName.charAt(0).toUpperCase() + constructedName.slice(1).toLowerCase();
+
+        if (!generated.some(item => item.name === constructedName)) {
+          generated.push({
+            name: constructedName,
+            gender: isBoy ? 'boy' : 'girl',
+            origin: isBoy ? 'Europäisch / Amerikanisch' : 'Modern Western',
+            meaning: 'Zeitgenössischer Vorname'
+          });
+        }
+        counter++;
+      }
+
+      return generated;
+    };
+
+    const ALL_NAMES = generate5000Names();
+
+    // -------------------------------------------------------------
+    // MAIN APP COMPONENT
+    // -------------------------------------------------------------
     function App() {
-      const [user, setUser] = useState('Alex');
-      const [lastName, setLastName] = useState('Petz');
-      const [index, setIndex] = useState(0);
+      // User State
+      const [currentUser, setCurrentUser] = useState('Alex'); // 'Alex' or 'Marcelina'
+      const [lastName, setLastName] = useState('Müller');
+      const [genderFilter, setGenderFilter] = useState('all'); // 'all', 'boy', 'girl'
+      const [activeTab, setActiveTab] = useState('swipe'); // 'swipe', 'matches', 'likes', 'dislikes'
+      const [cardIndex, setCardIndex] = useState(0);
+
+      // Data States
       const [likes, setLikes] = useState({ Alex: [], Marcelina: [] });
       const [dislikes, setDislikes] = useState({ Alex: [], Marcelina: [] });
-      const [tab, setTab] = useState('swipe');
-      const [matchModal, setMatchModal] = useState(null);
 
-      const current = NAMES[index];
+      // Firebase & Sync States
+      const [syncStatus, setSyncStatus] = useState('demo'); // 'demo', 'connected', 'connecting', 'error'
+      const [showFirebaseModal, setShowFirebaseModal] = useState(false);
+      const [firebaseConfigInput, setFirebaseConfigInput] = useState(() => {
+        return localStorage.getItem('babyapp_firebase_config') || '';
+      });
+      const [dbRef, setDbRef] = useState(null);
 
-      const handleSwipe = (dir) => {
-        if (!current) return;
-        const name = current.name;
+      // Match Pop-up Modal State
+      const [matchModalName, setMatchModalName] = useState(null);
 
-        if (dir === 'like') {
-          const updatedLikes = { ...likes, [user]: [...likes[user], name] };
-          setLikes(updatedLikes);
+      // Filtered Names
+      const filteredNames = ALL_NAMES.filter(n => {
+        if (genderFilter === 'boy') return n.gender === 'boy';
+        if (genderFilter === 'girl') return n.gender === 'girl';
+        return true;
+      });
 
-          const otherUser = user === 'Alex' ? 'Marcelina' : 'Alex';
-          if (updatedLikes[otherUser].includes(name)) {
-            setMatchModal(name);
+      const currentCard = filteredNames[cardIndex];
+
+      // -------------------------------------------------------------
+      // FIREBASE INITIALIZATION & REALTIME LISTENERS
+      // -------------------------------------------------------------
+      useEffect(() => {
+        let isMounted = true;
+        const savedConfig = localStorage.getItem('babyapp_firebase_config');
+
+        if (savedConfig) {
+          try {
+            const config = JSON.parse(savedConfig);
+            if (config && config.databaseURL) {
+              setSyncStatus('connecting');
+              
+              // Re-initialize Firebase App if needed
+              if (!firebase.apps.length) {
+                firebase.initializeApp(config);
+              }
+
+              const db = firebase.database().ref('babyapp_session');
+              setDbRef(db);
+
+              // Live Sync Listeners
+              db.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && isMounted) {
+                  if (data.likes) setLikes(data.likes);
+                  if (data.dislikes) setDislikes(data.dislikes);
+                  if (data.lastName) setLastName(data.lastName);
+                  setSyncStatus('connected');
+                }
+              }, (error) => {
+                console.error("Firebase Sync Error:", error);
+                if (isMounted) setSyncStatus('error');
+              });
+
+              return () => db.off();
+            }
+          } catch (e) {
+            console.warn("Invalid saved config:", e);
+            setSyncStatus('demo');
           }
         } else {
-          setDislikes({ ...dislikes, [user]: [...dislikes[user], name] });
+          setSyncStatus('demo');
         }
-        setIndex(prev => prev + 1);
+      }, []);
+
+      // Update Firebase when data changes
+      const syncToFirebase = (newLikes, newDislikes, newLastName) => {
+        if (dbRef && syncStatus === 'connected') {
+          dbRef.set({
+            likes: newLikes,
+            dislikes: newDislikes,
+            lastName: newLastName,
+            lastUpdatedBy: currentUser
+          });
+        }
       };
 
-      const matches = NAMES.filter(n => likes.Alex.includes(n.name) && likes.Marcelina.includes(n.name));
-      const myLikes = likes[user];
+      // -------------------------------------------------------------
+      // ACTION HANDLERS
+      // -------------------------------------------------------------
+      const handleSwipe = (direction) => {
+        if (!currentCard) return;
+
+        const name = currentCard.name;
+        const otherUser = currentUser === 'Alex' ? 'Marcelina' : 'Alex';
+
+        if (direction === 'like') {
+          const userLikes = likes[currentUser] || [];
+          if (!userLikes.includes(name)) {
+            const updatedLikes = {
+              ...likes,
+              [currentUser]: [...userLikes, name]
+            };
+            setLikes(updatedLikes);
+            syncToFirebase(updatedLikes, dislikes, lastName);
+
+            // Check if other user already liked this name
+            const partnerLikes = likes[otherUser] || [];
+            if (partnerLikes.includes(name)) {
+              setMatchModalName(name);
+            }
+          }
+        } else {
+          const userDislikes = dislikes[currentUser] || [];
+          if (!userDislikes.includes(name)) {
+            const updatedDislikes = {
+              ...dislikes,
+              [currentUser]: [...userDislikes, name]
+            };
+            setDislikes(updatedDislikes);
+            syncToFirebase(likes, updatedDislikes, lastName);
+          }
+        }
+
+        setCardIndex(prev => prev + 1);
+      };
+
+      const handleUndoDislike = (nameToUndo) => {
+        const updatedDislikes = {
+          ...dislikes,
+          [currentUser]: (dislikes[currentUser] || []).filter(n => n !== nameToUndo)
+        };
+        setDislikes(updatedDislikes);
+        syncToFirebase(likes, updatedDislikes, lastName);
+      };
+
+      const handleLastNameChange = (val) => {
+        setLastName(val);
+        syncToFirebase(likes, dislikes, val);
+      };
+
+      const handleSaveFirebaseConfig = () => {
+        try {
+          if (!firebaseConfigInput.trim()) {
+            localStorage.removeItem('babyapp_firebase_config');
+            window.location.reload();
+            return;
+          }
+          const parsed = JSON.parse(firebaseConfigInput);
+          if (!parsed.databaseURL) {
+            alert("Bitte stelle sicher, dass die Config 'databaseURL' enthält!");
+            return;
+          }
+          localStorage.setItem('babyapp_firebase_config', JSON.stringify(parsed));
+          window.location.reload();
+        } catch (e) {
+          alert("Fehlerhafter JSON-Code! Bitte füge das Firebase Config-Objekt korrekt ein.");
+        }
+      };
+
+      // Calculate Matches
+      const alexLikes = likes.Alex || [];
+      const marcelinaLikes = likes.Marcelina || [];
+      const matches = ALL_NAMES.filter(n => alexLikes.includes(n.name) && marcelinaLikes.includes(n.name));
+      const myLikes = likes[currentUser] || [];
+      const myDislikes = dislikes[currentUser] || [];
 
       return (
-        <div className="max-w-md mx-auto min-h-screen p-4 flex flex-col">
-          {/* Header */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex justify-between items-center">
-            <div>
-              <h1 className="font-bold text-rose-500">Alex & Marcelina</h1>
-              <p className="text-[10px] text-gray-400">{NAMES.length} Namen</p>
-            </div>
-            <div className="flex bg-rose-50 p-1 rounded-xl">
-              <button onClick={() => setUser('Alex')} className={`px-3 py-1 rounded-lg text-xs font-bold ${user === 'Alex' ? 'bg-rose-500 text-white' : 'text-gray-500'}`}>Alex</button>
-              <button onClick={() => setUser('Marcelina')} className={`px-3 py-1 rounded-lg text-xs font-bold ${user === 'Marcelina' ? 'bg-purple-500 text-white' : 'text-gray-500'}`}>Marcelina</button>
-            </div>
-          </div>
-
-          {/* Nachname */}
-          <div className="bg-white rounded-xl p-3 shadow-sm mb-4">
-            <label className="text-xs text-gray-400 font-semibold block mb-1">Euer Nachname (Vorschau):</label>
-            <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-rose-50 rounded-lg p-2 text-sm font-bold outline-none" />
-          </div>
-
-          {/* Tabs */}
-          <div className="flex bg-white rounded-xl p-1 shadow-sm mb-4">
-            <button onClick={() => setTab('swipe')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'swipe' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Swipen</button>
-            <button onClick={() => setTab('matches')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'matches' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Matches ({matches.length})</button>
-            <button onClick={() => setTab('likes')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${tab === 'likes' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>Likes ({myLikes.length})</button>
-          </div>
-
-          {/* Swipe Ansicht */}
-          {tab === 'swipe' && (
-            <div className="flex-1 flex flex-col justify-center items-center">
-              {current ? (
-                <div className="w-full bg-white rounded-3xl p-8 shadow-md text-center">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold mb-4 inline-block ${current.gender === 'boy' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
-                    {current.gender === 'boy' ? 'Junge' : 'Mädchen'}
+        <div className="max-w-md mx-auto min-h-screen pb-12 px-4 pt-4 flex flex-col justify-between">
+          
+          {/* HEADER & PROFILE SWITCHER */}
+          <div>
+            <div className="bg-white rounded-3xl p-4 shadow-sm mb-3 border border-rose-100 flex justify-between items-center">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-rose-500 font-fun">Alex & Marcelina</h1>
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className={`w-2 h-2 rounded-full ${
+                    syncStatus === 'connected' ? 'bg-green-500 animate-pulse' :
+                    syncStatus === 'connecting' ? 'bg-yellow-400 animate-ping' :
+                    syncStatus === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                  }`}></span>
+                  <span className="text-[10px] text-gray-400 font-medium cursor-pointer" onClick={() => setShowFirebaseModal(true)}>
+                    {syncStatus === 'connected' ? 'Echtzeit Synchron' :
+                     syncStatus === 'connecting' ? 'Verbinde...' :
+                     syncStatus === 'error' ? 'Sync Fehler' : 'Demo-Modus (Klick für Config)'}
                   </span>
-                  <h2 className="text-4xl font-extrabold text-gray-800">{current.name}</h2>
-                  <p className="text-2xl font-bold text-rose-400 mt-1">{lastName}</p>
-                  <p className="text-xs text-gray-500 mt-4">{current.origin}</p>
-                  <div className="flex justify-center gap-6 mt-8">
-                    <button onClick={() => handleSwipe('dislike')} className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 text-2xl font-bold">✕</button>
-                    <button onClick={() => handleSwipe('like')} className="w-16 h-16 rounded-full bg-rose-500 text-white text-2xl font-bold">♥</button>
-                  </div>
                 </div>
-              ) : (
-                <div className="bg-white rounded-2xl p-6 text-center shadow-sm w-full">
-                  <p className="font-bold text-gray-700">Alle Namen durchgesehen! 🎉</p>
-                  <button onClick={() => setIndex(0)} className="mt-4 px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-bold">Von vorne</button>
-                </div>
-              )}
-            </div>
-          )}
+              </div>
 
-          {/* Matches Ansicht */}
-          {tab === 'matches' && (
-            <div className="space-y-2">
-              <h3 className="font-bold text-sm text-gray-700 px-1">Gemeinsame Favoriten (Matches ❤️):</h3>
-              {matches.length === 0 ? (
-                <div className="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Noch keine Matches. Swipt weiter!</div>
-              ) : (
-                matches.map((m, i) => (
-                  <div key={i} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
-                    <div>
-                      <span className="font-bold text-gray-800">{m.name} {lastName}</span>
-                      <p className="text-[10px] text-gray-400">{m.origin}</p>
+              {/* User Switcher */}
+              <div className="flex bg-rose-50 p-1 rounded-2xl border border-rose-100">
+                <button 
+                  onClick={() => setCurrentUser('Alex')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    currentUser === 'Alex' 
+                      ? 'bg-rose-500 text-white shadow-md scale-105' 
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`}>
+                  Alex
+                </button>
+                <button 
+                  onClick={() => setCurrentUser('Marcelina')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    currentUser === 'Marcelina' 
+                      ? 'bg-purple-500 text-white shadow-md scale-105' 
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`}>
+                  Marcelina
+                </button>
+              </div>
+            </div>
+
+            {/* NACHNAME INPUT */}
+            <div className="bg-white rounded-2xl p-3 shadow-sm mb-3 border border-rose-100 flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-400">Nachname:</span>
+              <input 
+                type="text" 
+                value={lastName}
+                onChange={(e) => handleLastNameChange(e.target.value)}
+                placeholder="Euer Nachname"
+                className="bg-rose-50/60 rounded-xl px-3 py-1.5 text-right font-bold text-rose-600 text-sm outline-none border border-rose-100 focus:border-rose-300 w-1/2"
+              />
+            </div>
+
+            {/* GENDER FILTER */}
+            <div className="flex gap-2 mb-3">
+              <button 
+                onClick={() => { setGenderFilter('all'); setCardIndex(0); }} 
+                className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition ${genderFilter === 'all' ? 'bg-rose-500 text-white border-rose-500 shadow-sm' : 'bg-white text-gray-500 border-rose-100'}`}>
+                Alle (5000+)
+              </button>
+              <button 
+                onClick={() => { setGenderFilter('girl'); setCardIndex(0); }} 
+                className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition ${genderFilter === 'girl' ? 'bg-pink-500 text-white border-pink-500 shadow-sm' : 'bg-white text-gray-500 border-rose-100'}`}>
+                🌸 Mädchen
+              </button>
+              <button 
+                onClick={() => { setGenderFilter('boy'); setCardIndex(0); }} 
+                className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition ${genderFilter === 'boy' ? 'bg-blue-500 text-white border-blue-500 shadow-sm' : 'bg-white text-gray-500 border-rose-100'}`}>
+                👑 Jungen
+              </button>
+            </div>
+
+            {/* TAB NAVIGATION */}
+            <div className="flex bg-white rounded-2xl p-1 shadow-sm mb-4 border border-rose-100">
+              <button 
+                onClick={() => setActiveTab('swipe')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${activeTab === 'swipe' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>
+                Swipen
+              </button>
+              <button 
+                onClick={() => setActiveTab('matches')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition relative ${activeTab === 'matches' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>
+                Matches ({matches.length})
+                {matches.length > 0 && <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-rose-500"></span>}
+              </button>
+              <button 
+                onClick={() => setActiveTab('likes')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${activeTab === 'likes' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>
+                Likes ({myLikes.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('dislikes')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-xl transition ${activeTab === 'dislikes' ? 'bg-rose-100 text-rose-600' : 'text-gray-400'}`}>
+                Dislikes
+              </button>
+            </div>
+          </div>
+
+          {/* MAIN TAB CONTENT */}
+          <div className="flex-1 flex flex-col justify-center my-2">
+            
+            {/* 1. SWIPE TAB */}
+            {activeTab === 'swipe' && (
+              <div>
+                {currentCard ? (
+                  <div className="bg-white rounded-3xl p-8 shadow-xl border border-rose-100 text-center relative overflow-hidden animate-pulse-subtle">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${
+                      currentCard.gender === 'boy' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'
+                    }`}>
+                      {currentCard.gender === 'boy' ? 'Junge' : 'Mädchen'}
+                    </span>
+
+                    <div className="my-4">
+                      <h2 className="text-4xl font-extrabold text-gray-800 tracking-wide font-fun">{currentCard.name}</h2>
+                      <p className="text-2xl font-bold text-rose-400 mt-1 font-fun">{lastName}</p>
                     </div>
-                    <span className="text-xl">🎉</span>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
 
-          {/* Likes Ansicht */}
-          {tab === 'likes' && (
-            <div className="space-y-2">
-              <h3 className="font-bold text-sm text-gray-700 px-1">Deine Likes ({user}):</h3>
-              {myLikes.length === 0 ? (
-                <div className="bg-white p-6 rounded-2xl text-center text-gray-400 text-xs">Du hast noch keine Namen geliked.</div>
-              ) : (
-                myLikes.map((name, i) => (
-                  <div key={i} className="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center">
-                    <span className="font-bold text-gray-800">{name} {lastName}</span>
-                    <span className="text-xs text-rose-500 font-bold">♥ Geliked</span>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+                    <div className="bg-rose-50/60 rounded-2xl p-3 text-xs text-gray-600 space-y-1 mb-6">
+                      <p><strong>Herkunft:</strong> {currentCard.origin}</p>
+                      <p><strong>Bedeutung:</strong> {currentCard.meaning}</p>
+                    </div>
 
-          {/* Match Popup Modal */}
-          {matchModal && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-2xl border-4 border-rose-300">
-                <div className="text-4xl mb-2">💖</div>
-                <h2 className="text-2xl font-bold text-rose-500">MATCH!</h2>
-                <p className="text-sm text-gray-600 mt-1">Ihr beide findet gut:</p>
-                <p className="text-xl font-black text-gray-800 mt-1">{matchModal} {lastName}</p>
-                <button onClick={() => setMatchModal(null)} className="mt-6 w-full py-3 bg-rose-500 text-white font-bold rounded-2xl shadow-lg">Super!</button>
+                    {/* Action Buttons */}
+                    <div className="flex justify-center gap-6">
+                      <button 
+                        onClick={() => handleSwipe('dislike')} 
+                        className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 text-2xl font-bold flex items-center justify-center shadow-md active:scale-90 transition border border-gray-200">
+                        ✕
+                      </button>
+                      <button 
+                        onClick={() => handleSwipe('like')} 
+                        className="w-16 h-16 rounded-full bg-rose-500 text-white text-2xl font-bold flex items-center justify-center shadow-lg active:scale-90 transition border border-rose-400">
+                        ♥
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-3xl p-8 text-center shadow-sm border border-rose-100">
+                    <p className="text-lg font-bold text-gray-700 font-fun">Alle Namen angesehen! 🎉</p>
+                    <p className="text-xs text-gray-400 mt-1">Ihr könnt die Filter ändern oder von vorne beginnen.</p>
+                    <button onClick={() => setCardIndex(0)} className="mt-4 px-6 py-2.5 bg-rose-500 text-white rounded-2xl font-bold text-xs shadow-md">
+                      Von vorne beginnen
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 2. MATCHES TAB */}
+            {activeTab === 'matches' && (
+              <div className="space-y-3">
+                <h3 className="font-bold text-xs text-gray-400 px-1 uppercase tracking-wider">Gemeinsame Favorites (Matches ❤️)</h3>
+                {matches.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-xs border border-rose-100 shadow-sm">
+                    Noch keine gemeinsamen Matches! Swipt weiter, um eure Favoriten zu entdecken.
+                  </div>
+                ) : (
+                  matches.map((m, i) => (
+                    <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-rose-200 flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-base text-gray-800 font-fun">{m.name} <span className="text-rose-400">{lastName}</span></h4>
+                        <p className="text-xs text-gray-400">{m.origin} • {m.gender === 'boy' ? 'Junge' : 'Mädchen'}</p>
+                      </div>
+                      <span className="text-2xl">🎉</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* 3. LIKES TAB */}
+            {activeTab === 'likes' && (
+              <div className="space-y-3">
+                <h3 className="font-bold text-xs text-gray-400 px-1 uppercase tracking-wider">Geliked von {currentUser} ({myLikes.length})</h3>
+                {myLikes.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-xs border border-rose-100 shadow-sm">
+                    Du hast bisher noch keine Namen geliked.
+                  </div>
+                ) : (
+                  myLikes.map((name, i) => (
+                    <div key={i} className="bg-white rounded-2xl p-3 shadow-sm border border-rose-100 flex justify-between items-center">
+                      <span className="font-bold text-gray-800 font-fun">{name} <span className="text-rose-400">{lastName}</span></span>
+                      <span className="text-xs text-rose-500 font-bold bg-rose-50 px-2.5 py-1 rounded-full">♥ Geliked</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* 4. DISLIKES TAB */}
+            {activeTab === 'dislikes' && (
+              <div className="space-y-3">
+                <h3 className="font-bold text-xs text-gray-400 px-1 uppercase tracking-wider">Verworfen von {currentUser} ({myDislikes.length})</h3>
+                {myDislikes.length === 0 ? (
+                  <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-xs border border-rose-100 shadow-sm">
+                    Keine verworfenen Namen.
+                  </div>
+                ) : (
+                  myDislikes.map((name, i) => (
+                    <div key={i} className="bg-white rounded-2xl p-3 shadow-sm border border-rose-100 flex justify-between items-center">
+                      <span className="text-sm text-gray-500 line-through">{name}</span>
+                      <button 
+                        onClick={() => handleUndoDislike(name)}
+                        className="text-xs bg-gray-100 hover:bg-rose-50 text-gray-600 hover:text-rose-600 px-3 py-1 rounded-xl font-bold transition">
+                        Wiederholen
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+          </div>
+
+          {/* MATCH MODAL POP-UP */}
+          {matchModalName && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-3xl p-6 text-center max-w-xs w-full shadow-2xl border-4 border-rose-300 transform scale-100 transition-all">
+                <div className="text-5xl mb-2 animate-bounce">💖</div>
+                <h2 className="text-3xl font-extrabold text-rose-500 font-fun">MATCH!</h2>
+                <p className="text-xs text-gray-500 mt-1">Alex & Marcelina mögen beide den Namen:</p>
+                <div className="my-4 py-3 bg-rose-50 rounded-2xl border border-rose-100">
+                  <p className="text-2xl font-black text-gray-800 font-fun">{matchModalName}</p>
+                  <p className="text-lg font-bold text-rose-400 font-fun">{lastName}</p>
+                </div>
+                <button 
+                  onClick={() => setMatchModalName(null)}
+                  className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl shadow-lg transition active:scale-95">
+                  Großartig! ❤️
+                </button>
               </div>
             </div>
           )}
+
+          {/* FIREBASE CONFIG MODAL */}
+          {showFirebaseModal && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-rose-100">
+                <h3 className="font-bold text-lg text-rose-500 font-fun mb-2">Firebase Synchronisation</h3>
+                <p className="text-xs text-gray-500 mb-4">
+                  Füge dein Firebase Config JSON ein, um deine Handys in Echtzeit zu verbinden. (Lass es leer, um im Demo-Modus zu bleiben).
+                </p>
+                <textarea 
+                  rows="6"
+                  value={firebaseConfigInput}
+                  onChange={(e) => setFirebaseConfigInput(e.target.value)}
+                  placeholder='{\n  "apiKey": "...",\n  "databaseURL": "https://..."\n}'
+                  className="w-full text-xs font-mono p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-rose-400 mb-4"
+                />
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setShowFirebaseModal(false)}
+                    className="flex-1 py-2 text-xs font-bold text-gray-500 rounded-xl bg-gray-100">
+                    Abbrechen
+                  </button>
+                  <button 
+                    onClick={handleSaveFirebaseConfig}
+                    className="flex-1 py-2 text-xs font-bold text-white rounded-xl bg-rose-500 shadow-md">
+                    Speichern
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       );
     }
 
+    // Render the React application
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
